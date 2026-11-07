@@ -1,0 +1,12 @@
+# Linter y formateador del proyecto:  ruff check .   |   ruff format .
+line-length = 100
+target-version = "py310"
+extend-exclude = ["venv", "asistencia/migrations"]
+
+[lint]
+# E/W: PEP 8 · F: errores · B: bugs comunes · UP: sintaxis moderna
+# SIM: simplificaciones · C90: complejidad ciclomática · I: orden de imports
+select = ["E", "F", "W", "B", "UP", "SIM", "C90", "I"]
+
+[lint.mccabe]
+max-complexity = 8

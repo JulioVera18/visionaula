@@ -34,7 +34,8 @@ class FakeEngine:
 
     def analyze(self, image, gallery, threshold=0.4):
         face = FaceResult(
-            box=(40, 40, 80, 100), score=0.95,
+            box=(40, 40, 80, 100),
+            score=0.95,
             landmarks=((60, 70), (100, 70), (80, 90), (65, 115), (95, 115)),
             match=Match(label=self.label, similarity=self.similarity),
             face_crop=image[40:140, 40:120].copy(),
@@ -99,7 +100,12 @@ def fake_engine(monkeypatch):
 
 @pytest.fixture
 def detection():
-    raw = np.array([40, 40, 80, 100, 60, 70, 100, 70, 80, 90, 65, 115, 95, 115, 0.95],
-                   dtype=np.float32)
-    return FaceDetection(box=(40, 40, 80, 100), score=0.95,
-                         landmarks=((60, 70), (100, 70), (80, 90), (65, 115), (95, 115)), raw=raw)
+    raw = np.array(
+        [40, 40, 80, 100, 60, 70, 100, 70, 80, 90, 65, 115, 95, 115, 0.95], dtype=np.float32
+    )
+    return FaceDetection(
+        box=(40, 40, 80, 100),
+        score=0.95,
+        landmarks=((60, 70), (100, 70), (80, 90), (65, 115), (95, 115)),
+        raw=raw,
+    )

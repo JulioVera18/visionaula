@@ -5,10 +5,10 @@ import numpy as np
 
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 
-COLOR_KNOWN = (80, 200, 60)       # verde (BGR)
+COLOR_KNOWN = (80, 200, 60)  # verde (BGR)
 COLOR_CONFIRMED = (255, 170, 30)  # azul
-COLOR_UNKNOWN = (40, 60, 230)     # rojo
-COLOR_LANDMARK = (0, 220, 255)    # amarillo
+COLOR_UNKNOWN = (40, 60, 230)  # rojo
+COLOR_LANDMARK = (0, 220, 255)  # amarillo
 COLOR_TEXT = (255, 255, 255)
 
 
@@ -25,7 +25,9 @@ def draw_label(image: np.ndarray, text: str, origin: tuple, color: tuple) -> Non
     x, y = origin
     y = max(y, th + baseline + 4)
     cv2.rectangle(image, (x, y - th - baseline - 6), (x + tw + 8, y), color, cv2.FILLED)
-    cv2.putText(image, text, (x + 4, y - baseline - 2), FONT, scale, COLOR_TEXT, thickness, cv2.LINE_AA)
+    cv2.putText(
+        image, text, (x + 4, y - baseline - 2), FONT, scale, COLOR_TEXT, thickness, cv2.LINE_AA
+    )
 
 
 def draw_corners(image: np.ndarray, box: tuple, color: tuple, thickness: int = 2) -> None:
@@ -33,7 +35,12 @@ def draw_corners(image: np.ndarray, box: tuple, color: tuple, thickness: int = 2
     x, y, w, h = box
     length = max(int(min(w, h) * 0.22), 8)
     cv2.rectangle(image, (x, y), (x + w, y + h), color, 1, cv2.LINE_AA)
-    for cx, cy, dx, dy in ((x, y, 1, 1), (x + w, y, -1, 1), (x, y + h, 1, -1), (x + w, y + h, -1, -1)):
+    for cx, cy, dx, dy in (
+        (x, y, 1, 1),
+        (x + w, y, -1, 1),
+        (x, y + h, 1, -1),
+        (x + w, y + h, -1, -1),
+    ):
         cv2.line(image, (cx, cy), (cx + dx * length, cy), color, thickness + 1, cv2.LINE_AA)
         cv2.line(image, (cx, cy), (cx, cy + dy * length), color, thickness + 1, cv2.LINE_AA)
 
@@ -46,11 +53,11 @@ def draw_landmarks(image: np.ndarray, landmarks: tuple) -> None:
 def pixelate(image: np.ndarray, box: tuple, blocks: int = 10) -> None:
     """Pixela una región (modo privacidad para rostros desconocidos)."""
     x, y, w, h = box
-    region = image[y:y + h, x:x + w]
+    region = image[y : y + h, x : x + w]
     if region.size == 0:
         return
     small = cv2.resize(region, (blocks, blocks), interpolation=cv2.INTER_LINEAR)
-    image[y:y + h, x:x + w] = cv2.resize(small, (w, h), interpolation=cv2.INTER_NEAREST)
+    image[y : y + h, x : x + w] = cv2.resize(small, (w, h), interpolation=cv2.INTER_NEAREST)
 
 
 def draw_hud(image: np.ndarray, lines: list) -> None:

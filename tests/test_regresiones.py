@@ -16,7 +16,8 @@ pytestmark = [pytest.mark.integration, pytest.mark.django_db]
 
 
 def test_attendance_retried_after_transient_failure(
-        cliente, docente, estudiante, fake_engine, jpeg_bytes, monkeypatch):
+    cliente, docente, estudiante, fake_engine, jpeg_bytes, monkeypatch
+):
     fake_engine.label = estudiante.pk
     sesion = nueva_sesion(docente)
     original = services._registrar_asistencia
@@ -51,7 +52,9 @@ def test_gallery_notices_activation_swap_and_name_change(estudiante, fake_engine
     assert cache.get()[1][otro.pk] == "Pedro Mora"
 
 
-def test_deleting_student_removes_biometric_files(cliente, docente, estudiante, fake_engine, jpeg_bytes):
+def test_deleting_student_removes_biometric_files(
+    cliente, docente, estudiante, fake_engine, jpeg_bytes
+):
     muestra = services.registrar_muestra(estudiante, jpeg_bytes)
     fake_engine.label = estudiante.pk
     sesion = nueva_sesion(docente)

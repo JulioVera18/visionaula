@@ -60,13 +60,15 @@ class FaceEngine:
         self._lock = threading.Lock()
 
     @classmethod
-    def from_models(cls, yunet: Path, sface: Path, score_threshold: float = 0.8,
-                    min_face_size: int = 40) -> "FaceEngine":
+    def from_models(
+        cls, yunet: Path, sface: Path, score_threshold: float = 0.8, min_face_size: int = 40
+    ) -> "FaceEngine":
         detector = FaceDetector(yunet, score_threshold=score_threshold, min_face_size=min_face_size)
         return cls(detector, FaceEmbedder(sface))
 
-    def analyze(self, image: np.ndarray, gallery: Gallery,
-                threshold: float = DEFAULT_THRESHOLD) -> FrameAnalysis:
+    def analyze(
+        self, image: np.ndarray, gallery: Gallery, threshold: float = DEFAULT_THRESHOLD
+    ) -> FrameAnalysis:
         """Detecta y reconoce todos los rostros de un fotograma."""
         started = time.perf_counter()
         frame = preprocessing.resize_max_side(image, PROCESSING_MAX_SIDE)

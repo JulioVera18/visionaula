@@ -5,7 +5,11 @@ import pytest
 from django.conf import settings
 
 from vision.model_store import (
-    MODELS, ModelUnavailableError, is_model_valid, model_path, require_model,
+    MODELS,
+    ModelUnavailableError,
+    is_model_valid,
+    model_path,
+    require_model,
 )
 from vision.pipeline import EnrollmentError, FaceEngine
 from vision.recognizer import EMPTY_GALLERY, FaceEmbedder

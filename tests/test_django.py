@@ -16,13 +16,18 @@ def frame(data: bytes) -> SimpleUploadedFile:
 
 
 def nueva_sesion(docente, **extra) -> SesionClase:
-    return SesionClase.objects.create(asignatura="Construcción de Software", docente=docente, **extra)
+    return SesionClase.objects.create(
+        asignatura="Construcción de Software", docente=docente, **extra
+    )
 
 
 # --- Autenticación --------------------------------------------------------
 
-@pytest.mark.parametrize("nombre", ["asistencia:dashboard", "asistencia:monitor",
-                                    "asistencia:estudiantes", "asistencia:sesiones"])
+
+@pytest.mark.parametrize(
+    "nombre",
+    ["asistencia:dashboard", "asistencia:monitor", "asistencia:estudiantes", "asistencia:sesiones"],
+)
 def test_pages_require_login(client, nombre):
     response = client.get(reverse(nombre))
     assert response.status_code == 302 and "/cuentas/login/" in response["Location"]
@@ -40,9 +45,17 @@ def test_login_page_renders(client):
 
 # --- Páginas --------------------------------------------------------------
 
-@pytest.mark.parametrize("nombre", ["asistencia:dashboard", "asistencia:monitor",
-                                    "asistencia:estudiantes", "asistencia:sesiones",
-                                    "asistencia:estudiante_nuevo"])
+
+@pytest.mark.parametrize(
+    "nombre",
+    [
+        "asistencia:dashboard",
+        "asistencia:monitor",
+        "asistencia:estudiantes",
+        "asistencia:sesiones",
+        "asistencia:estudiante_nuevo",
+    ],
+)
 def test_pages_render_for_logged_user(cliente, nombre):
     assert cliente.get(reverse(nombre)).status_code == 200
 
@@ -55,10 +68,17 @@ def test_monitor_uses_active_session(cliente, docente):
 
 # --- Estudiantes ----------------------------------------------------------
 
+
 def test_create_student_normalizes_data_and_redirects_to_enrollment(cliente):
-    response = cliente.post(reverse("asistencia:estudiante_nuevo"), {
-        "codigo": " ab-123 ", "nombres": "  ana   maría ", "apellidos": "pérez", "activo": "on",
-    })
+    response = cliente.post(
+        reverse("asistencia:estudiante_nuevo"),
+        {
+            "codigo": " ab-123 ",
+            "nombres": "  ana   maría ",
+            "apellidos": "pérez",
+            "activo": "on",
+        },
+    )
     estudiante = Estudiante.objects.get()
     assert estudiante.codigo == "AB-123"
     assert estudiante.nombres == "Ana María"
@@ -66,8 +86,10 @@ def test_create_student_normalizes_data_and_redirects_to_enrollment(cliente):
 
 
 def test_create_student_rejects_invalid_code(cliente):
-    response = cliente.post(reverse("asistencia:estudiante_nuevo"),
-                            {"codigo": "x; DROP", "nombres": "A", "apellidos": "B"})
+    response = cliente.post(
+        reverse("asistencia:estudiante_nuevo"),
+        {"codigo": "x; DROP", "nombres": "A", "apellidos": "B"},
+    )
     assert response.status_code == 200
     assert not Estudiante.objects.exists()
 
@@ -94,6 +116,7 @@ def test_delete_requires_post(cliente, estudiante):
 
 # --- Enrolamiento (API) ---------------------------------------------------
 
+
 def test_register_sample_stores_embedding_and_image(cliente, estudiante, fake_engine, jpeg_bytes):
     url = reverse("asistencia:api_muestra", args=[estudiante.pk])
     response = cliente.post(url, {"frame": frame(jpeg_bytes)})
@@ -101,13 +124,17 @@ def test_register_sample_stores_embedding_and_image(cliente, estudiante, fake_en
     muestra = MuestraRostro.objects.get()
     assert muestra.vector().shape == (128,)
     assert response.json()["data"]["total"] == 1
-    assert cliente.get(reverse("asistencia:estudiante_enrolar", args=[estudiante.pk])).status_code == 200
+    assert (
+        cliente.get(reverse("asistencia:estudiante_enrolar", args=[estudiante.pk])).status_code
+        == 200
+    )
 
 
 def test_register_sample_rejects_photo_without_face(cliente, estudiante, fake_engine, jpeg_bytes):
     fake_engine.enrollment_error = "No se detectó ningún rostro."
-    response = cliente.post(reverse("asistencia:api_muestra", args=[estudiante.pk]),
-                            {"frame": frame(jpeg_bytes)})
+    response = cliente.post(
+        reverse("asistencia:api_muestra", args=[estudiante.pk]), {"frame": frame(jpeg_bytes)}
+    )
     assert response.status_code == 422
     assert response.json()["error"] == "No se detectó ningún rostro."
 
@@ -128,6 +155,7 @@ def test_delete_sample(cliente, estudiante, fake_engine, jpeg_bytes):
 
 # --- Procesamiento en vivo (API) ------------------------------------------
 
+
 def procesar(cliente, jpeg, sesion=None, **extra):
     data = {"frame": frame(jpeg), "sesion": sesion.pk if sesion else "", **extra}
     return cliente.post(reverse("asistencia:api_procesar"), data)
@@ -143,7 +171,8 @@ def test_process_frame_returns_annotated_image_and_faces(cliente, fake_engine, j
 
 
 def test_attendance_registered_after_three_consecutive_recognitions(
-        cliente, docente, estudiante, fake_engine, jpeg_bytes):
+    cliente, docente, estudiante, fake_engine, jpeg_bytes
+):
     services.registrar_muestra(estudiante, jpeg_bytes)
     fake_engine.label = estudiante.pk
     sesion = nueva_sesion(docente)
@@ -158,7 +187,8 @@ def test_attendance_registered_after_three_consecutive_recognitions(
 
 
 def test_no_attendance_without_session_or_in_closed_session(
-        cliente, docente, estudiante, fake_engine, jpeg_bytes):
+    cliente, docente, estudiante, fake_engine, jpeg_bytes
+):
     fake_engine.label = estudiante.pk
     cerrada = nueva_sesion(docente)
     cerrada.cerrar()
@@ -179,14 +209,16 @@ def test_process_frame_requires_frame_field(cliente, fake_engine):
 
 
 def test_process_frame_rejects_non_numeric_session(cliente, fake_engine, jpeg_bytes):
-    response = cliente.post(reverse("asistencia:api_procesar"),
-                            {"frame": frame(jpeg_bytes), "sesion": "1 OR 1=1"})
+    response = cliente.post(
+        reverse("asistencia:api_procesar"), {"frame": frame(jpeg_bytes), "sesion": "1 OR 1=1"}
+    )
     assert response.status_code == 400
 
 
 def test_process_frame_returns_503_when_models_missing(cliente, jpeg_bytes, monkeypatch):
     def sin_modelos():
         raise ModelUnavailableError("Ejecute: python manage.py descargar_modelos")
+
     monkeypatch.setattr(services, "get_engine", sin_modelos)
     response = procesar(cliente, jpeg_bytes)
     assert response.status_code == 503 and "descargar_modelos" in response.json()["error"]
@@ -195,6 +227,7 @@ def test_process_frame_returns_503_when_models_missing(cliente, jpeg_bytes, monk
 def test_process_frame_hides_internal_errors(cliente, jpeg_bytes, monkeypatch):
     def falla():
         raise RuntimeError("detalle interno secreto")
+
     monkeypatch.setattr(services, "get_engine", falla)
     response = procesar(cliente, jpeg_bytes)
     assert response.status_code == 500
@@ -202,6 +235,7 @@ def test_process_frame_hides_internal_errors(cliente, jpeg_bytes, monkeypatch):
 
 
 # --- Sesiones --------------------------------------------------------------
+
 
 def test_create_session_redirects_to_monitor(cliente, docente):
     response = cliente.post(reverse("asistencia:sesiones"), {"asignatura": "Construcción"})
@@ -224,8 +258,12 @@ def test_close_session_and_detail_stats(cliente, docente, estudiante):
     sesion.refresh_from_db()
     assert not sesion.activa
     response = cliente.get(reverse("asistencia:sesion_detalle", args=[sesion.pk]))
-    assert response.context["stats"] == {"inscritos": 2, "presentes": 1, "ausentes": 1,
-                                         "porcentaje": 50.0}
+    assert response.context["stats"] == {
+        "inscritos": 2,
+        "presentes": 1,
+        "ausentes": 1,
+        "porcentaje": 50.0,
+    }
 
 
 def test_csv_export_marks_present_and_absent_and_escapes_formulas(cliente, docente, estudiante):

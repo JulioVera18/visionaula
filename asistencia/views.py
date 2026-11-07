@@ -37,8 +37,9 @@ def dashboard(request):
         "total_sesiones": SesionClase.objects.count(),
         "asistencias_hoy": Asistencia.objects.filter(registrado__date=hoy).count(),
         "sesion_activa": SesionClase.objects.filter(fin__isnull=True).first(),
-        "ultimas": Asistencia.objects.select_related("estudiante", "sesion")
-        .order_by("-registrado")[:8],
+        "ultimas": Asistencia.objects.select_related("estudiante", "sesion").order_by(
+            "-registrado"
+        )[:8],
         "modelos_listos": _modelos_listos(),
     }
     return render(request, "asistencia/dashboard.html", contexto)
@@ -48,6 +49,7 @@ def dashboard(request):
 # Estudiantes
 # ---------------------------------------------------------------------------
 
+
 class EstudianteListView(LoginRequiredMixin, ListView):
     model = Estudiante
     template_name = "asistencia/estudiantes/lista.html"
@@ -56,11 +58,13 @@ class EstudianteListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = Estudiante.objects.annotate(n_muestras=Count("muestras")).order_by(
-            "apellidos", "nombres")
+            "apellidos", "nombres"
+        )
         termino = self.request.GET.get("q", "").strip()
         if termino:
             queryset = queryset.filter(
-                Q(nombres__icontains=termino) | Q(apellidos__icontains=termino)
+                Q(nombres__icontains=termino)
+                | Q(apellidos__icontains=termino)
                 | Q(codigo__icontains=termino)
             )
         return queryset
@@ -129,6 +133,7 @@ def muestra_eliminar(request, pk: int):
 # Sesiones de clase
 # ---------------------------------------------------------------------------
 
+
 @login_required
 def sesiones(request):
     form = SesionForm(request.POST or None)
@@ -189,17 +194,23 @@ def sesion_csv(request, pk: int):
     for estudiante in Estudiante.objects.filter(activo=True):
         asistencia = presentes.get(estudiante.pk)
         hora = timezone.localtime(asistencia.registrado).strftime("%H:%M:%S") if asistencia else ""
-        writer.writerow([
-            _csv_seguro(estudiante.codigo), _csv_seguro(estudiante.apellidos),
-            _csv_seguro(estudiante.nombres), "Presente" if asistencia else "Ausente",
-            hora, f"{asistencia.similitud:.3f}" if asistencia else "",
-        ])
+        writer.writerow(
+            [
+                _csv_seguro(estudiante.codigo),
+                _csv_seguro(estudiante.apellidos),
+                _csv_seguro(estudiante.nombres),
+                "Presente" if asistencia else "Ausente",
+                hora,
+                f"{asistencia.similitud:.3f}" if asistencia else "",
+            ]
+        )
     return response
 
 
 # ---------------------------------------------------------------------------
 # Monitor en tiempo real
 # ---------------------------------------------------------------------------
+
 
 @login_required
 def monitor(request):

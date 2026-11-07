@@ -10,8 +10,11 @@ urlpatterns = [
     # Estudiantes
     path("estudiantes/", views.EstudianteListView.as_view(), name="estudiantes"),
     path("estudiantes/nuevo/", views.EstudianteCreateView.as_view(), name="estudiante_nuevo"),
-    path("estudiantes/<int:pk>/editar/", views.EstudianteUpdateView.as_view(),
-         name="estudiante_editar"),
+    path(
+        "estudiantes/<int:pk>/editar/",
+        views.EstudianteUpdateView.as_view(),
+        name="estudiante_editar",
+    ),
     path("estudiantes/<int:pk>/eliminar/", views.estudiante_eliminar, name="estudiante_eliminar"),
     path("estudiantes/<int:pk>/rostro/", views.estudiante_enrolar, name="estudiante_enrolar"),
     path("muestras/<int:pk>/eliminar/", views.muestra_eliminar, name="muestra_eliminar"),

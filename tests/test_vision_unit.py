@@ -8,7 +8,13 @@ from vision import annotator, codec, preprocessing
 from vision.detector import FaceDetector, crop
 from vision.pipeline import FaceResult, FrameAnalysis, RenderOptions, render
 from vision.recognizer import (
-    EMPTY_GALLERY, Match, build_gallery, from_bytes, match, normalize, to_bytes,
+    EMPTY_GALLERY,
+    Match,
+    build_gallery,
+    from_bytes,
+    match,
+    normalize,
+    to_bytes,
 )
 
 from .conftest import make_jpeg
@@ -17,6 +23,7 @@ pytestmark = pytest.mark.unit
 
 
 # --- codec ----------------------------------------------------------------
+
 
 def test_decode_valid_jpeg_returns_bgr_matrix():
     image = codec.decode_image(make_jpeg(320, 240))
@@ -40,6 +47,7 @@ def test_data_url_has_jpeg_prefix():
 
 
 # --- preprocessing --------------------------------------------------------
+
 
 def test_dark_image_is_detected_as_low_light_and_enhanced():
     dark = np.full((100, 100, 3), 30, dtype=np.uint8)
@@ -91,6 +99,7 @@ def test_every_view_filter_returns_bgr_image_of_same_size(mode):
 
 # --- recognizer -----------------------------------------------------------
 
+
 def test_match_returns_unknown_for_empty_gallery():
     result = match(EMPTY_GALLERY, np.ones(128))
     assert result == Match(label=None, similarity=0.0)
@@ -124,6 +133,7 @@ def test_from_bytes_rejects_wrong_dimension():
 
 # --- detector helpers -----------------------------------------------------
 
+
 def test_crop_stays_inside_image():
     image = np.zeros((100, 100, 3), dtype=np.uint8)
     assert crop(image, (80, 80, 40, 40), margin=0).shape[:2] == (20, 20)
@@ -139,14 +149,16 @@ def test_detection_row_is_clipped_to_frame():
 
 # --- annotator / render ---------------------------------------------------
 
+
 def test_render_draws_annotations_and_pixelates_unknown_faces():
     rng = np.random.default_rng(6)
     image = rng.integers(0, 255, size=(240, 320, 3), dtype=np.uint8)
     unknown = FaceResult((40, 40, 80, 100), 0.9, ((60, 70),) * 5, Match(None, 0.1), image[:1, :1])
     known = FaceResult((180, 40, 80, 100), 0.9, ((200, 70),) * 5, Match(7, 0.8), image[:1, :1])
     analysis = FrameAnalysis(image, (unknown, known), low_light=True, elapsed_ms=12.0)
-    output = render(analysis, {7: "Ana Pérez"},
-                    RenderOptions(privacy=True, confirmed_labels=frozenset({7})))
+    output = render(
+        analysis, {7: "Ana Pérez"}, RenderOptions(privacy=True, confirmed_labels=frozenset({7}))
+    )
     assert output.shape == image.shape
     assert not np.array_equal(output, image)
     assert analysis.unknown_count == 1 and len(analysis.known) == 1
@@ -157,6 +169,7 @@ def test_ascii_label_replaces_accents():
 
 
 # --- tracker --------------------------------------------------------------
+
 
 class FakeClock:
     def __init__(self):

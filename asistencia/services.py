@@ -29,6 +29,7 @@ class SampleLimitError(EnrollmentError):
 # Motor de visión (se crea una sola vez por proceso)
 # ---------------------------------------------------------------------------
 
+
 class _Singleton:
     """Crea el objeto una sola vez aunque varios hilos lo pidan a la vez
     (doble verificación con candado; lru_cache no lo garantiza)."""
@@ -73,6 +74,7 @@ get_tracker = _Singleton(_crear_tracker)
 # Galería de rostros con caché invalidada por cambios en la BD
 # ---------------------------------------------------------------------------
 
+
 class GalleryCache:
     def __init__(self):
         self._lock = threading.Lock()
@@ -111,6 +113,7 @@ gallery_cache = GalleryCache()
 # Registro de muestras (enrolamiento)
 # ---------------------------------------------------------------------------
 
+
 def registrar_muestra(estudiante: Estudiante, image_bytes: bytes) -> MuestraRostro:
     limit = settings.VISION["MAX_SAMPLES_PER_STUDENT"]
     if estudiante.muestras.count() >= limit:
@@ -132,6 +135,7 @@ def registrar_muestra(estudiante: Estudiante, image_bytes: bytes) -> MuestraRost
 # Procesamiento de fotogramas en vivo
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class FrameRequest:
     image_bytes: bytes
@@ -147,8 +151,9 @@ def _confirmados(sesion: SesionClase | None) -> set:
 
 
 def _registrar_asistencia(sesion: SesionClase, face) -> Asistencia | None:
-    asistencia = Asistencia(sesion=sesion, estudiante_id=face.match.label,
-                            similitud=face.match.similarity)
+    asistencia = Asistencia(
+        sesion=sesion, estudiante_id=face.match.label, similitud=face.match.similarity
+    )
     evidencia = ContentFile(codec.encode_jpeg(face.face_crop, 85))
     asistencia.evidencia.save(f"s{sesion.pk}_e{face.match.label}.jpg", evidencia, save=False)
     try:
@@ -210,8 +215,11 @@ def procesar_frame(request: FrameRequest) -> dict:
     analysis = get_engine().analyze(image, gallery, settings.VISION["MATCH_THRESHOLD"])
     confirmados = _confirmados(request.sesion)
     nuevas = _actualizar_asistencias(request.sesion, analysis, confirmados)
-    options = RenderOptions(view_mode=request.view_mode, privacy=request.privacy,
-                            confirmed_labels=frozenset(confirmados))
+    options = RenderOptions(
+        view_mode=request.view_mode,
+        privacy=request.privacy,
+        confirmed_labels=frozenset(confirmados),
+    )
     output = render(analysis, names, options)
     return {
         "imagen": codec.to_data_url(output, 75),
@@ -236,7 +244,9 @@ def abrir_sesion(sesion: SesionClase) -> SesionClase:
         with transaction.atomic():
             sesion.save()
     except IntegrityError as exc:
-        raise SesionActivaError("Ya existe una sesión activa: ciérrela antes de abrir otra.") from exc
+        raise SesionActivaError(
+            "Ya existe una sesión activa: ciérrela antes de abrir otra."
+        ) from exc
     return sesion
 
 
@@ -249,5 +259,9 @@ def estadisticas_sesion(sesion: SesionClase) -> dict:
     inscritos = Estudiante.objects.filter(activo=True).count()
     presentes = sesion.asistencias.count()
     porcentaje = round(presentes * 100 / inscritos, 1) if inscritos else 0.0
-    return {"inscritos": inscritos, "presentes": presentes,
-            "ausentes": max(inscritos - presentes, 0), "porcentaje": porcentaje}
+    return {
+        "inscritos": inscritos,
+        "presentes": presentes,
+        "ausentes": max(inscritos - presentes, 0),
+        "porcentaje": porcentaje,
+    }

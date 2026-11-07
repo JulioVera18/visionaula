@@ -11,8 +11,8 @@ from dataclasses import dataclass
 import cv2
 import numpy as np
 
-LOW_LIGHT_THRESHOLD = 80.0      # brillo medio (0-255) por debajo del cual se corrige
-MIN_SHARPNESS = 25.0            # varianza del Laplaciano mínima para un rostro nítido
+LOW_LIGHT_THRESHOLD = 80.0  # brillo medio (0-255) por debajo del cual se corrige
+MIN_SHARPNESS = 25.0  # varianza del Laplaciano mínima para un rostro nítido
 MIN_FACE_BRIGHTNESS = 45.0
 MAX_FACE_BRIGHTNESS = 225.0
 
@@ -85,6 +85,7 @@ def assess_face_quality(face: np.ndarray) -> FaceQuality:
 # ---------------------------------------------------------------------------
 # Filtros de visualización
 # ---------------------------------------------------------------------------
+
 
 def _filter_normal(image: np.ndarray) -> np.ndarray:
     return image

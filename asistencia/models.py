@@ -1,6 +1,7 @@
 """Modelos de datos (persistidos en PostgreSQL)."""
 
-from datetime import datetime, timezone as dt_timezone
+from datetime import datetime
+from datetime import timezone as dt_timezone
 
 from django.conf import settings
 from django.core.validators import RegexValidator
@@ -18,8 +19,9 @@ codigo_validator = RegexValidator(
 
 
 class Estudiante(models.Model):
-    codigo = models.CharField("código / cédula", max_length=20, unique=True,
-                              validators=[codigo_validator])
+    codigo = models.CharField(
+        "código / cédula", max_length=20, unique=True, validators=[codigo_validator]
+    )
     nombres = models.CharField(max_length=80)
     apellidos = models.CharField(max_length=80)
     email = models.EmailField("correo", blank=True)
@@ -63,8 +65,9 @@ class MuestraRostro(models.Model):
 class SesionClase(models.Model):
     asignatura = models.CharField(max_length=100)
     tema = models.CharField(max_length=150, blank=True)
-    docente = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
-                                related_name="sesiones")
+    docente = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="sesiones"
+    )
     inicio = models.DateTimeField(default=timezone.now)
     fin = models.DateTimeField(null=True, blank=True)
 
@@ -105,7 +108,9 @@ class Asistencia(models.Model):
     class Meta:
         ordering = ["registrado"]
         constraints = [
-            models.UniqueConstraint(fields=["sesion", "estudiante"], name="asistencia_unica_por_sesion")
+            models.UniqueConstraint(
+                fields=["sesion", "estudiante"], name="asistencia_unica_por_sesion"
+            )
         ]
 
     def __str__(self) -> str:

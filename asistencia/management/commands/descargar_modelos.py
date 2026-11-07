@@ -8,7 +8,9 @@ class Command(BaseCommand):
     help = "Descarga y verifica (SHA-256) los modelos ONNX de OpenCV Zoo: YuNet y SFace."
 
     def add_arguments(self, parser):
-        parser.add_argument("--forzar", action="store_true", help="Volver a descargar aunque existan.")
+        parser.add_argument(
+            "--forzar", action="store_true", help="Volver a descargar aunque existan."
+        )
 
     def handle(self, *args, **options):
         models_dir = settings.VISION["MODELS_DIR"]

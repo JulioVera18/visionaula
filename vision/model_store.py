@@ -66,8 +66,7 @@ def require_model(models_dir: Path, key: str) -> Path:
     path = model_path(models_dir, key)
     if not path.is_file():
         raise ModelUnavailableError(
-            f"Falta el modelo '{MODELS[key].filename}'. "
-            "Ejecute: python manage.py descargar_modelos"
+            f"Falta el modelo '{MODELS[key].filename}'. Ejecute: python manage.py descargar_modelos"
         )
     return path
 
@@ -79,9 +78,11 @@ def download_model(models_dir: Path, key: str) -> Path:
     target.parent.mkdir(parents=True, exist_ok=True)
     temporary = target.with_suffix(".part")
     try:
-        with urllib.request.urlopen(spec.url, timeout=DOWNLOAD_TIMEOUT_SECONDS) as response:
-            with open(temporary, "wb") as handle:
-                shutil.copyfileobj(response, handle, _CHUNK)
+        with (
+            urllib.request.urlopen(spec.url, timeout=DOWNLOAD_TIMEOUT_SECONDS) as response,
+            open(temporary, "wb") as handle,
+        ):
+            shutil.copyfileobj(response, handle, _CHUNK)
     except OSError as exc:
         temporary.unlink(missing_ok=True)
         raise ModelUnavailableError(f"No se pudo descargar {spec.filename}: {exc}") from exc
