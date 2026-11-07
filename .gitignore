@@ -40,3 +40,4 @@ tests/
 .github/
 pytest.ini
 requirements-dev.txt
+docker-compose.yml

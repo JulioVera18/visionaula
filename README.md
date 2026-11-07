@@ -86,21 +86,22 @@ visionaula/
 ├── templates/              # base.html y login
 ├── docs/                   # casos de prueba, guion del video, plantilla del informe
 ├── modelos/                # aquí se descargan los .onnx (no se suben a GitHub)
-├── docker-compose.yml      # PostgreSQL opcional con Docker
-├── requirements.txt
-└── .env.example
+├── manage.py
+├── requirements.txt        # dependencias del proyecto
+├── ruff.toml               # reglas de estilo de código
+└── .env.example            # plantilla de variables de entorno
 ```
 
 ## Requisitos
 
 - Python 3.10 o superior
-- PostgreSQL 14 o superior (instalado localmente o con Docker)
+- PostgreSQL 14 o superior
 - Una cámara web y un navegador moderno (Chrome, Edge o Firefox)
 
 ## Instalación
 
 ```bash
-git clone https://github.com/<usuario>/visionaula.git
+git clone https://github.com/JulioVera18/visionaula.git
 cd visionaula
 python -m venv venv
 ```
@@ -121,17 +122,13 @@ Edite `.env`: coloque una `DJANGO_SECRET_KEY` y los datos de su PostgreSQL.
 
 ### Base de datos PostgreSQL
 
-**Opción A — PostgreSQL instalado:** cree la base de datos.
+Cree la base de datos desde pgAdmin o con `psql`:
 
 ```sql
 CREATE DATABASE visionaula;
 ```
 
-**Opción B — Docker:**
-
-```bash
-docker compose up -d
-```
+Los datos de conexión (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`) se configuran en `.env`.
 
 ### Migraciones, modelos y usuario
 
