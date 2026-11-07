@@ -26,3 +26,8 @@ modelos/*.part
 .idea/
 .DS_Store
 Thumbs.db
+
+# Notas personales de herramientas locales (memoria / Obsidian)
+.obsidian_vault
+.project-memory/
+.claude/
