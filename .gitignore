@@ -34,3 +34,9 @@ Thumbs.db
 
 # Documentos de entrega (informe con datos del grupo)
 entrega/
+
+# Pruebas automatizadas y CI (solo en local, no se entregan)
+tests/
+.github/
+pytest.ini
+requirements-dev.txt

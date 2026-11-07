@@ -28,7 +28,7 @@ Detección de rostros para control de asistencia.
 ## 3. Tecnologías
 
 Python · Django · OpenCV (cv2: `FaceDetectorYN`, `FaceRecognizerSF`, CLAHE, Canny, Laplaciano) ·
-PostgreSQL · HTML/CSS/JavaScript (`getUserMedia`) · pytest · Git/GitHub · Docker (opcional).
+PostgreSQL · HTML/CSS/JavaScript (`getUserMedia`) · Git/GitHub · Docker (opcional).
 
 ## 4. Desarrollo por sesiones
 
@@ -37,11 +37,11 @@ PostgreSQL · HTML/CSS/JavaScript (`getUserMedia`) · pytest · Git/GitHub · Do
 - **Sesión 2 — Procesamiento y detección:** módulo `vision/` con detección YuNet, reconocimiento
   SFace, mejora CLAHE y anotación de resultados directamente sobre el video.
 - **Sesión 3 — Interfaz y pruebas:** panel, monitor en vivo, gestión de estudiantes y sesiones,
-  exportación CSV, 76 pruebas automatizadas y 27 casos de prueba funcionales.
+  exportación CSV y 27 casos de prueba funcionales.
 
 ## 5. Capturas de pantalla
 
-_(Insertar: login, panel, registro de rostro, monitor reconociendo, detalle de sesión, pytest.)_
+_(Insertar: login, panel, registro de rostro, monitor reconociendo, detalle de sesión.)_
 
 ## 6. Enlaces
 

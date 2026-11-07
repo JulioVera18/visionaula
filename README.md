@@ -4,7 +4,6 @@ Aplicativo web en **Django** que captura video en tiempo real desde la cámara d
 lo procesa con **OpenCV**, **detecta y reconoce** los rostros de los estudiantes y registra
 automáticamente su asistencia en **PostgreSQL**.
 
-[![Pruebas](https://github.com/JulioVera18/visionaula/actions/workflows/pruebas.yml/badge.svg)](https://github.com/JulioVera18/visionaula/actions/workflows/pruebas.yml)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)
 ![Django](https://img.shields.io/badge/Django-5.2%20%7C%206.x-092E20)
 ![OpenCV](https://img.shields.io/badge/OpenCV-YuNet%20%2B%20SFace-5C3EE8)
@@ -85,7 +84,6 @@ visionaula/
 │   ├── templates/  static/ #   interfaz web (HTML, CSS, JS)
 │   └── management/commands/descargar_modelos.py
 ├── templates/              # base.html y login
-├── tests/                  # pruebas unitarias e integración (pytest)
 ├── docs/                   # casos de prueba, guion del video, plantilla del informe
 ├── modelos/                # aquí se descargan los .onnx (no se suben a GitHub)
 ├── docker-compose.yml      # PostgreSQL opcional con Docker
@@ -161,17 +159,11 @@ Abra <http://localhost:8000> e inicie sesión.
 
 ## Pruebas
 
-```bash
-pip install -r requirements-dev.txt
-pytest --cov=vision --cov=asistencia
-```
+El sistema se probó en funcionamiento con los casos de prueba de
+[docs/CASOS_DE_PRUEBA.md](docs/CASOS_DE_PRUEBA.md): inicio de sesión, permisos de cámara,
+registro de rostro, reconocimiento, poca luz, filtros, modo privacidad, sesiones y exportación CSV.
 
-- **76 pruebas** (unitarias del módulo de visión + integración de vistas, API y base de datos), **93 % de cobertura**.
-- **Integración continua:** en cada push, GitHub Actions ejecuta `ruff`, verifica las migraciones y corre las pruebas contra **PostgreSQL 17**.
-- Estilo de código: `ruff check .` y `ruff format .` (configuración en `ruff.toml`).
-- Las pruebas que usan las redes reales se omiten si no se ejecutó `descargar_modelos`.
-- Para correr las pruebas sin PostgreSQL se puede usar `DB_ENGINE=sqlite` en `.env`.
-- Los casos de prueba funcionales (manuales) están en [docs/CASOS_DE_PRUEBA.md](docs/CASOS_DE_PRUEBA.md).
+Estilo de código: `ruff check .` y `ruff format .` (configuración en `ruff.toml`).
 
 ## Configuración (`.env`)
 

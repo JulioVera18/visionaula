@@ -1,7 +1,7 @@
 ﻿# Casos de prueba — VisionAula
 
 Pruebas funcionales que el equipo ejecuta con el sistema en funcionamiento (Sesión 3 de la guía).
-Complementan las 76 pruebas automatizadas de `tests/`.
+Cada integrante puede ejecutarlos con la cámara de su computador.
 
 **Entorno:** Windows 11, Python 3.x, PostgreSQL, Chrome, cámara integrada de laptop.
 Marque el resultado obtenido en la última columna.

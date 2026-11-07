@@ -15,6 +15,6 @@ Herramientas sugeridas: OBS Studio o la Grabadora de pantalla de Windows (Win + 
 | 1:15 – 2:00 | Monitor | Iniciar la cámara: detección con puntos faciales, reconocimiento por nombre, barra de confirmación, registro con notificación. Que entre una persona no registrada (marco rojo). Varias personas a la vez. |
 | 2:00 – 2:25 | Monitor | Cambiar filtros (CLAHE, Canny, térmico), activar *Pixelar desconocidos* y bajar la luz para mostrar la corrección automática. |
 | 2:25 – 2:45 | Detalle de sesión | Presentes con foto de evidencia, ausentes, porcentaje; cerrar la sesión y exportar CSV. |
-| 2:45 – 3:00 | Terminal | `pytest`: 76 pruebas en verde. Cierre. |
+| 2:45 – 3:00 | GitHub | Mostrar el repositorio (README, requirements.txt, estructura). Cierre. |
 
 Recordatorio: todos los integrantes deben participar (la guía exige presencia y participación para la calificación).
