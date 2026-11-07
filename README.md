@@ -128,9 +128,3 @@ visionaula/
 
 Los casos de prueba realizados se encuentran en el archivo
 [docs/CASOS_DE_PRUEBA.md](docs/CASOS_DE_PRUEBA.md).
-
-## Referencias
-
-- Pressman, R. S. (2005). *Ingeniería del software: un enfoque práctico*. McGraw-Hill.
-- OpenCV Zoo: modelos YuNet y SFace. <https://github.com/opencv/opencv_zoo>
-- Documentación de Django. <https://docs.djangoproject.com/es/>
