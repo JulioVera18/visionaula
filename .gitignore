@@ -1,0 +1,28 @@
+# Entornos virtuales (la práctica exige NO subirlos)
+venv/
+.venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Django
+.env
+db.sqlite3
+media/
+staticfiles/
+
+# Modelos ONNX (se descargan con: python manage.py descargar_modelos)
+modelos/*.onnx
+modelos/*.part
+
+# Editores / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

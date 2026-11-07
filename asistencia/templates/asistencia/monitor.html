@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Monitor en vivo{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <h1>Monitor en vivo</h1>
+    {% if sesion %}
+      <p class="muted">{% if sesion.activa %}<span class="badge badge-live">EN CURSO</span>{% else %}<span class="badge">CERRADA</span>{% endif %}
+        {{ sesion.asignatura }} · {{ sesion.tema|default:"Sin tema" }}</p>
+    {% else %}
+      <p class="muted">Sin sesión activa: el sistema reconoce rostros pero <b>no registra asistencia</b>. <a href="{% url 'asistencia:sesiones' %}">Iniciar una sesión</a></p>
+    {% endif %}
+  </div>
+</header>
+
+{% if not modelos_listos %}
+<div class="alert alert-warning">Faltan los modelos de OpenCV. Ejecute <code>python manage.py descargar_modelos</code>.</div>
+{% endif %}
+
+<div class="monitor">
+  <section class="card">
+    <div class="video-box">
+      <video id="video" autoplay playsinline muted hidden></video>
+      <img id="salida" alt="Video procesado por OpenCV" hidden>
+      <div id="placeholder" class="placeholder">La cámara está apagada</div>
+    </div>
+    <div class="toolbar">
+      <button id="btn-camara" class="btn btn-primary" type="button">Iniciar cámara</button>
+      <label>Filtro
+        <select id="modo">{% for key, label in filtros %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select>
+      </label>
+      <label class="check"><input id="privacidad" type="checkbox"> Pixelar desconocidos</label>
+    </div>
+    <div class="metrics">
+      <div><span class="stat-label">Rostros</span><b id="m-rostros">0</b></div>
+      <div><span class="stat-label">Desconocidos</span><b id="m-desc">0</b></div>
+      <div><span class="stat-label">Proceso</span><b id="m-ms">–</b></div>
+      <div><span class="stat-label">FPS</span><b id="m-fps">–</b></div>
+    </div>
+    <p id="estado" class="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <aside class="card">
+    {% if sesion %}
+    <h2>Asistencia <span class="muted" id="resumen">{{ stats.presentes }}/{{ stats.inscritos }}</span></h2>
+    <div class="meter"><span id="barra" style="width: {{ stats.porcentaje|floatformat:0 }}%"></span></div>
+    {% endif %}
+    <h3>Detectados ahora</h3>
+    <ul id="en-vivo" class="live-list"><li class="muted">—</li></ul>
+    {% if sesion %}
+    <h3>Registrados</h3>
+    <ul id="registrados" class="attendance">
+      {% for a in asistencias %}
+      <li>{% if a.evidencia %}<img class="thumb" src="{{ a.evidencia.url }}" alt="">{% endif %}
+        <div><b>{{ a.estudiante.nombre_completo }}</b><span class="muted">{{ a.registrado|time:"H:i:s" }}</span></div></li>
+      {% empty %}<li class="muted vacio">Nadie aún</li>{% endfor %}
+    </ul>
+    {% endif %}
+  </aside>
+</div>
+<canvas id="canvas" hidden></canvas>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+{% csrf_token %}
+{% endblock %}
+{% block scripts %}
+<script type="module">
+  import { iniciarMonitor } from "{% static 'asistencia/js/monitor.js' %}";
+  iniciarMonitor({
+    url: "{% url 'asistencia:api_procesar' %}",
+    sesion: "{% if sesion and sesion.activa %}{{ sesion.pk }}{% endif %}",
+    inscritos: {{ stats.inscritos|default:0 }},
+    presentes: {{ stats.presentes|default:0 }},
+  });
+</script>
+{% endblock %}

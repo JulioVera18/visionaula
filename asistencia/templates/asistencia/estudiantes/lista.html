@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Estudiantes{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><h1>Estudiantes</h1><p class="muted">Registro y muestras faciales.</p></div>
+  <a class="btn btn-primary" href="{% url 'asistencia:estudiante_nuevo' %}">+ Nuevo estudiante</a>
+</header>
+
+<form class="search" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="Buscar por nombre, apellido o código" aria-label="Buscar">
+  <button class="btn" type="submit">Buscar</button>
+</form>
+
+<section class="card">
+  {% if estudiantes %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Código</th><th>Estudiante</th><th>Curso</th><th>Muestras</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+    {% for e in estudiantes %}
+      <tr>
+        <td><code>{{ e.codigo }}</code></td>
+        <td>{{ e.apellidos }} {{ e.nombres }}</td>
+        <td>{{ e.curso|default:"—" }}</td>
+        <td>{% if e.n_muestras %}<span class="badge badge-ok">{{ e.n_muestras }}</span>{% else %}<span class="badge badge-warn">Sin rostro</span>{% endif %}</td>
+        <td>{% if e.activo %}Activo{% else %}<span class="muted">Inactivo</span>{% endif %}</td>
+        <td class="actions">
+          <a class="btn btn-sm" href="{% url 'asistencia:estudiante_enrolar' e.pk %}">Rostro</a>
+          <a class="btn btn-sm" href="{% url 'asistencia:estudiante_editar' e.pk %}">Editar</a>
+          <form method="post" action="{% url 'asistencia:estudiante_eliminar' e.pk %}" onsubmit="return confirm('¿Eliminar a {{ e.nombre_completo|escapejs }} y todas sus muestras?');">
+            {% csrf_token %}<button class="btn btn-sm btn-danger" type="submit">Eliminar</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% if is_paginated %}
+  <nav class="pager">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&q={{ q|urlencode }}">← Anterior</a>{% endif %}
+    <span class="muted">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&q={{ q|urlencode }}">Siguiente →</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+    <p class="muted">No hay estudiantes{% if q %} que coincidan con “{{ q }}”{% endif %}.</p>
+  {% endif %}
+</section>
+{% endblock %}

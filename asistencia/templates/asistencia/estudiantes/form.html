@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{% if object %}Editar{% else %}Nuevo{% endif %} estudiante{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><h1>{% if object %}Editar estudiante{% else %}Nuevo estudiante{% endif %}</h1>
+  <p class="muted">{% if object %}{{ object.nombre_completo }}{% else %}Después podrás registrar su rostro.{% endif %}</p></div>
+</header>
+<form class="card form" method="post" novalidate>
+  {% csrf_token %}
+  {% for field in form %}
+    <label class="{% if field.field.widget.input_type == 'checkbox' %}check{% endif %}">
+      {% if field.field.widget.input_type == 'checkbox' %}{{ field }} {{ field.label|capfirst }}{% else %}{{ field.label|capfirst }}{{ field }}{% endif %}
+      {% for e in field.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+    </label>
+  {% endfor %}
+  <div class="form-actions">
+    <a class="btn" href="{% url 'asistencia:estudiantes' %}">Cancelar</a>
+    <button class="btn btn-primary" type="submit">Guardar</button>
+  </div>
+</form>
+{% endblock %}

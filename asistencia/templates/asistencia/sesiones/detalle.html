@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Sesión{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <h1>{{ sesion.asignatura }}</h1>
+    <p class="muted">{{ sesion.tema|default:"Sin tema" }} · {{ sesion.inicio|date:"d/m/Y H:i" }}{% if sesion.fin %} – {{ sesion.fin|time:"H:i" }}{% endif %} · Docente: {{ sesion.docente.get_full_name|default:sesion.docente.username }}</p>
+  </div>
+  <div class="actions">
+    {% if sesion.activa %}
+      <a class="btn btn-primary" href="{% url 'asistencia:monitor' %}?sesion={{ sesion.pk }}">Monitor</a>
+      <form method="post" action="{% url 'asistencia:sesion_cerrar' sesion.pk %}" onsubmit="return confirm('¿Cerrar la sesión? Ya no se registrarán más asistencias.');">
+        {% csrf_token %}<button class="btn btn-danger" type="submit">Cerrar sesión</button>
+      </form>
+    {% endif %}
+    <a class="btn" href="{% url 'asistencia:sesion_csv' sesion.pk %}">Exportar CSV</a>
+  </div>
+</header>
+
+<section class="stats">
+  <div class="stat"><span class="stat-label">Inscritos</span><span class="stat-value">{{ stats.inscritos }}</span></div>
+  <div class="stat"><span class="stat-label">Presentes</span><span class="stat-value ok">{{ stats.presentes }}</span></div>
+  <div class="stat"><span class="stat-label">Ausentes</span><span class="stat-value bad">{{ stats.ausentes }}</span></div>
+  <div class="stat"><span class="stat-label">Asistencia</span><span class="stat-value">{{ stats.porcentaje }}%</span>
+    <div class="meter"><span style="width: {{ stats.porcentaje|floatformat:0 }}%"></span></div></div>
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <h2>Presentes</h2>
+    {% if asistencias %}
+    <ul class="attendance">
+      {% for a in asistencias %}
+      <li>{% if a.evidencia %}<img class="thumb" src="{{ a.evidencia.url }}" alt="">{% endif %}
+        <div><b>{{ a.estudiante.nombre_completo }}</b><span class="muted">{{ a.registrado|time:"H:i:s" }} · similitud {{ a.similitud|floatformat:2 }}</span></div></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted">Nadie registrado todavía.</p>{% endif %}
+  </section>
+  <section class="card">
+    <h2>Ausentes</h2>
+    {% if ausentes %}
+    <ul class="plain">{% for e in ausentes %}<li>{{ e.apellidos }} {{ e.nombres }} <code>{{ e.codigo }}</code></li>{% endfor %}</ul>
+    {% else %}<p class="muted">¡Asistencia completa!</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

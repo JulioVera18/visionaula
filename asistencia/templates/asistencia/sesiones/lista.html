@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Sesiones{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><h1>Sesiones de clase</h1><p class="muted">Cada sesión agrupa las asistencias de una clase.</p></div>
+</header>
+
+<form class="card form form-inline" method="post">
+  {% csrf_token %}
+  <label>Asignatura{{ form.asignatura }}{% for e in form.asignatura.errors %}<span class="field-error">{{ e }}</span>{% endfor %}</label>
+  <label>Tema{{ form.tema }}</label>
+  <button class="btn btn-primary" type="submit">Iniciar sesión</button>
+</form>
+
+<section class="card">
+  {% if sesiones %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Asignatura</th><th>Tema</th><th>Inicio</th><th>Estado</th><th>Presentes</th><th></th></tr></thead>
+    <tbody>
+    {% for s in sesiones %}
+      <tr>
+        <td><b>{{ s.asignatura }}</b></td>
+        <td>{{ s.tema|default:"—" }}</td>
+        <td>{{ s.inicio|date:"d/m/Y H:i" }}</td>
+        <td>{% if s.activa %}<span class="badge badge-live">EN CURSO</span>{% else %}Cerrada {{ s.fin|time:"H:i" }}{% endif %}</td>
+        <td>{{ s.presentes }}</td>
+        <td class="actions">
+          {% if s.activa %}<a class="btn btn-sm btn-primary" href="{% url 'asistencia:monitor' %}?sesion={{ s.pk }}">Monitor</a>{% endif %}
+          <a class="btn btn-sm" href="{% url 'asistencia:sesion_detalle' s.pk %}">Detalle</a>
+          <a class="btn btn-sm" href="{% url 'asistencia:sesion_csv' s.pk %}">CSV</a>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+    <p class="muted">Aún no se han creado sesiones.</p>
+  {% endif %}
+</section>
+{% endblock %}

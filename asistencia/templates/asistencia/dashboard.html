@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Panel{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <h1>Panel de control</h1>
+    <p class="muted">Resumen de asistencia registrada mediante reconocimiento facial.</p>
+  </div>
+  {% if sesion_activa %}
+    <a class="btn btn-primary" href="{% url 'asistencia:monitor' %}?sesion={{ sesion_activa.pk }}">Abrir monitor</a>
+  {% else %}
+    <a class="btn btn-primary" href="{% url 'asistencia:sesiones' %}">Iniciar sesión de clase</a>
+  {% endif %}
+</header>
+
+{% if not modelos_listos %}
+<div class="alert alert-warning">Faltan los modelos de OpenCV. Ejecute <code>python manage.py descargar_modelos</code>.</div>
+{% endif %}
+
+<section class="stats">
+  <div class="stat"><span class="stat-label">Estudiantes activos</span><span class="stat-value">{{ total_estudiantes }}</span></div>
+  <div class="stat"><span class="stat-label">Con rostro registrado</span><span class="stat-value">{{ con_rostro }}</span></div>
+  <div class="stat"><span class="stat-label">Sesiones</span><span class="stat-value">{{ total_sesiones }}</span></div>
+  <div class="stat"><span class="stat-label">Asistencias hoy</span><span class="stat-value">{{ asistencias_hoy }}</span></div>
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <h2>Sesión actual</h2>
+    {% if sesion_activa %}
+      <p><span class="badge badge-live">EN CURSO</span> <b>{{ sesion_activa.asignatura }}</b></p>
+      <p class="muted">{{ sesion_activa.tema|default:"Sin tema" }} · desde {{ sesion_activa.inicio|time:"H:i" }}</p>
+      <a href="{% url 'asistencia:sesion_detalle' sesion_activa.pk %}">Ver detalle →</a>
+    {% else %}
+      <p class="muted">No hay ninguna sesión abierta.</p>
+    {% endif %}
+  </section>
+  <section class="card">
+    <h2>Cómo funciona</h2>
+    <ol class="steps">
+      <li>Registra a los estudiantes y captura 3-5 fotos de su rostro.</li>
+      <li>Inicia una sesión de clase.</li>
+      <li>Abre el monitor: OpenCV detecta (YuNet) y reconoce (SFace) los rostros.</li>
+      <li>Tras 3 reconocimientos consecutivos se registra la asistencia.</li>
+    </ol>
+  </section>
+</div>
+
+<section class="card">
+  <h2>Últimos registros</h2>
+  {% if ultimas %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Evidencia</th><th>Estudiante</th><th>Sesión</th><th>Hora</th><th>Similitud</th></tr></thead>
+    <tbody>
+    {% for a in ultimas %}
+      <tr>
+        <td>{% if a.evidencia %}<img class="thumb" src="{{ a.evidencia.url }}" alt="">{% endif %}</td>
+        <td>{{ a.estudiante.nombre_completo }}</td>
+        <td>{{ a.sesion.asignatura }}</td>
+        <td>{{ a.registrado|date:"d/m H:i" }}</td>
+        <td>{{ a.similitud|floatformat:2 }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+    <p class="muted">Aún no hay asistencias registradas.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Registrar rostro{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><h1>Registrar rostro</h1>
+  <p class="muted">{{ estudiante.nombre_completo }} · <code>{{ estudiante.codigo }}</code></p></div>
+  <a class="btn" href="{% url 'asistencia:estudiantes' %}">← Volver</a>
+</header>
+
+{% if not modelos_listos %}
+<div class="alert alert-warning">Faltan los modelos de OpenCV. Ejecute <code>python manage.py descargar_modelos</code>.</div>
+{% endif %}
+
+<div class="grid-2">
+  <section class="card">
+    <div class="video-box">
+      <video id="video" autoplay playsinline muted></video>
+      <div class="face-guide" aria-hidden="true"></div>
+    </div>
+    <div class="toolbar">
+      <button id="btn-camara" class="btn btn-primary" type="button">Encender cámara</button>
+      <button id="btn-capturar" class="btn" type="button" disabled>Capturar foto</button>
+      <button id="btn-auto" class="btn" type="button" disabled>Captura automática (5)</button>
+    </div>
+    <label class="upload">o subir una foto:
+      <input id="archivo" type="file" accept="image/jpeg,image/png">
+    </label>
+    <p id="estado" class="status" role="status" aria-live="polite">Ubica el rostro dentro de la guía, con buena luz.</p>
+  </section>
+
+  <section class="card">
+    <h2>Muestras <span id="contador" class="badge">{{ muestras|length }}</span> <span class="muted">/ {{ max_muestras }}</span></h2>
+    <p class="muted">Recomendado: 3 a 5 fotos con ligeras variaciones (frente, leve giro, con/sin lentes).</p>
+    <div id="galeria" class="gallery">
+      {% for m in muestras %}
+      <figure>
+        <img src="{{ m.imagen.url }}" alt="Muestra de {{ estudiante.nombre_corto }}">
+        <figcaption>Calidad {{ m.calidad|floatformat:2 }}
+          <form method="post" action="{% url 'asistencia:muestra_eliminar' m.pk %}">{% csrf_token %}<button class="link danger" type="submit" title="Eliminar">✕</button></form>
+        </figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+<canvas id="canvas" hidden></canvas>
+{% csrf_token %}
+{% endblock %}
+{% block scripts %}
+<script type="module">
+  import { iniciarEnrolamiento } from "{% static 'asistencia/js/enrolar.js' %}";
+  iniciarEnrolamiento({ url: "{% url 'asistencia:api_muestra' estudiante.pk %}", maximo: {{ max_muestras }} });
+</script>
+{% endblock %}
