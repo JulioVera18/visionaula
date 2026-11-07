@@ -77,7 +77,7 @@ export function iniciarMonitor(config) {
   }
 
   async function procesar() {
-    const blob = await capturarFotograma(ui.video, ui.canvas, 0.75);
+    const blob = await capturarFotograma(ui.video, ui.canvas, 0.85);
     estado.abort = new AbortController();
     return enviarImagen(config.url, blob, {
       sesion: config.sesion,

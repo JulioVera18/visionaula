@@ -1,6 +1,6 @@
 // Utilidades compartidas: acceso a la cámara, captura de fotogramas y envío al servidor.
 
-const MAX_ANCHO = 640;
+const MAX_ANCHO = 1280; // HD 720p: buena nitidez sin saturar el servidor
 
 export function csrfToken() {
   const input = document.querySelector("input[name=csrfmiddlewaretoken]");

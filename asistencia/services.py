@@ -222,7 +222,7 @@ def procesar_frame(request: FrameRequest) -> dict:
     )
     output = render(analysis, names, options)
     return {
-        "imagen": codec.to_data_url(output, 75),
+        "imagen": codec.to_data_url(output, 85),
         "rostros": [_face_payload(f, names, confirmados, request.sesion) for f in analysis.faces],
         "total_rostros": len(analysis.faces),
         "desconocidos": analysis.unknown_count,

@@ -11,7 +11,7 @@ from . import annotator, preprocessing
 from .detector import FaceDetector, crop
 from .recognizer import DEFAULT_THRESHOLD, FaceEmbedder, Gallery, Match, match
 
-PROCESSING_MAX_SIDE = 960
+PROCESSING_MAX_SIDE = 1280
 
 
 @dataclass(frozen=True)
