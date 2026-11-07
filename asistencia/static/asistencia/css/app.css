@@ -61,7 +61,7 @@ body {
 }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
-code, .mono { font-family: var(--font-mono); font-size: 0.9em; }
+code, .mono { font-family: var(--font-mono); font-size: 0.9em; white-space: nowrap; }
 h1 { font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2.1rem); letter-spacing: -0.02em; margin: 0 0 4px; }
 h2 { font-size: 1.05rem; margin: 0 0 12px; }
 h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); margin: 20px 0 8px; }

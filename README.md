@@ -4,6 +4,14 @@ Aplicativo web en **Django** que captura video en tiempo real desde la cámara d
 lo procesa con **OpenCV**, **detecta y reconoce** los rostros de los estudiantes y registra
 automáticamente su asistencia en **PostgreSQL**.
 
+[![Pruebas](https://github.com/JulioVera18/visionaula/actions/workflows/pruebas.yml/badge.svg)](https://github.com/JulioVera18/visionaula/actions/workflows/pruebas.yml)
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)
+![Django](https://img.shields.io/badge/Django-5.2%20%7C%206.x-092E20)
+![OpenCV](https://img.shields.io/badge/OpenCV-YuNet%20%2B%20SFace-5C3EE8)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1)
+
+![Reconocimiento en tiempo real](docs/img/05-reconocimiento.jpg)
+
 > Universidad Estatal de Milagro (UNEMI) · Construcción de Software · Práctica 3 (G003-S12)
 > Temática elegida: **Detección de rostros para control de asistencia**.
 
@@ -24,7 +32,7 @@ automáticamente su asistencia en **PostgreSQL**.
 | **Detección** | Red neuronal **YuNet** (`cv2.FaceDetectorYN`): caja del rostro + 5 puntos faciales. Funciona con varios rostros a la vez. |
 | **Reconocimiento** | Red **SFace** (`cv2.FaceRecognizerSF`): alinea el rostro y genera un vector de 128 dimensiones; se compara por similitud coseno con la galería de estudiantes. |
 | **Procesamiento** | Corrección automática de poca luz (**CLAHE** en espacio LAB), control de calidad de muestras (nitidez por **varianza del Laplaciano** y brillo), redimensionado para rendimiento, filtros de visualización (grises, **Canny**, mapa térmico) y **pixelado de desconocidos** (modo privacidad). |
-| **Tiempo real** | El navegador captura la cámara (`getUserMedia`), envía fotogramas JPEG a Django y muestra el video anotado por OpenCV (≈10-12 FPS en una laptop). |
+| **Tiempo real** | El navegador captura la cámara (`getUserMedia`), envía fotogramas JPEG a Django y muestra el video anotado por OpenCV (hasta ~12 FPS; el procesamiento toma ≈25 ms por fotograma). |
 | **Estabilidad** | La asistencia solo se registra tras **3 reconocimientos consecutivos** en 4 s (evita falsos positivos); restricción única por sesión en la BD; manejo de errores en cada capa. |
 
 Otras características:
@@ -34,6 +42,16 @@ Otras características:
 - Detalle por sesión: presentes (con **foto de evidencia**), ausentes, porcentaje y **exportación CSV**.
 - Panel con estadísticas, modo claro/oscuro automático y diseño adaptable a pantallas pequeñas.
 - Acceso protegido con usuario y contraseña (autenticación de Django).
+
+## Capturas
+
+| Panel de control | Registro de rostro |
+|---|---|
+| ![Panel](docs/img/02-panel.jpg) | ![Registro de rostro](docs/img/04-registro-rostro.jpg) |
+| **Detalle de sesión** | **Modo privacidad (desconocido pixelado)** |
+| ![Detalle de sesión](docs/img/06-detalle-sesion.jpg) | ![Privacidad](docs/img/07-privacidad-desconocido.jpg) |
+
+> Las fotos de prueba son retratos oficiales de la NASA (dominio público).
 
 ## Arquitectura
 
@@ -149,6 +167,8 @@ pytest --cov=vision --cov=asistencia
 ```
 
 - **76 pruebas** (unitarias del módulo de visión + integración de vistas, API y base de datos), **93 % de cobertura**.
+- **Integración continua:** en cada push, GitHub Actions ejecuta `ruff`, verifica las migraciones y corre las pruebas contra **PostgreSQL 17**.
+- Estilo de código: `ruff check .` y `ruff format .` (configuración en `ruff.toml`).
 - Las pruebas que usan las redes reales se omiten si no se ejecutó `descargar_modelos`.
 - Para correr las pruebas sin PostgreSQL se puede usar `DB_ENGINE=sqlite` en `.env`.
 - Los casos de prueba funcionales (manuales) están en [docs/CASOS_DE_PRUEBA.md](docs/CASOS_DE_PRUEBA.md).
