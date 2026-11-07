@@ -1,190 +1,144 @@
-﻿# VisionAula — Control de asistencia con reconocimiento facial
+﻿# VisionAula: Control de asistencia con reconocimiento facial
 
-Aplicativo web en **Django** que captura video en tiempo real desde la cámara del navegador,
-lo procesa con **OpenCV**, **detecta y reconoce** los rostros de los estudiantes y registra
-automáticamente su asistencia en **PostgreSQL**.
+**Universidad Estatal de Milagro (UNEMI)**
+Facultad de Ciencias e Ingenierías, Carrera de Software
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)
-![Django](https://img.shields.io/badge/Django-5.2%20%7C%206.x-092E20)
-![OpenCV](https://img.shields.io/badge/OpenCV-YuNet%20%2B%20SFace-5C3EE8)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1)
+- **Asignatura:** Construcción de Software
+- **Práctica:** N.º 3 (Guía G003-S12)
+- **Docente de la asignatura:** Guevara Reyes Rodrigo Josué
+- **Docente de la práctica:** Almache Sanisaca Mariana Madeleine
 
-![Reconocimiento en tiempo real](docs/img/05-reconocimiento.jpg)
+## Integrantes
 
-> Universidad Estatal de Milagro (UNEMI) · Construcción de Software · Práctica 3 (G003-S12)
-> Temática elegida: **Detección de rostros para control de asistencia**.
+1. Nombre del integrante 1
+2. Nombre del integrante 2
+3. Nombre del integrante 3
+4. Nombre del integrante 4
+5. Nombre del integrante 5
 
-| Integrante | Rol |
-|---|---|
-| _Nombre 1_ | _Backend / OpenCV_ |
-| _Nombre 2_ | _Frontend_ |
-| _Nombre 3_ | _Base de datos_ |
-| _Nombre 4_ | _Pruebas_ |
-| _Nombre 5_ | _Documentación / video_ |
+## Descripción
 
----
+VisionAula es un aplicativo web desarrollado en Django que permite registrar la asistencia
+de los estudiantes mediante reconocimiento facial. El sistema captura video en tiempo real
+desde la cámara del computador, procesa cada imagen con OpenCV, detecta y reconoce los
+rostros, y guarda la asistencia en una base de datos PostgreSQL.
+
+**Temática elegida:** Detección de rostros para control de asistencia.
+
+## Objetivo
+
+Diseñar y desarrollar un aplicativo web en Django que capture video en tiempo real, lo
+procese con OpenCV, detecte y reconozca rostros, y muestre los resultados al usuario en
+una interfaz web interactiva.
+
+## Tecnologías utilizadas
+
+- Python 3.10 o superior
+- Django
+- OpenCV
+- PostgreSQL
+- HTML, CSS y JavaScript
 
 ## Funcionalidades
 
-| Eje de la rúbrica | Implementación |
-|---|---|
-| **Detección** | Red neuronal **YuNet** (`cv2.FaceDetectorYN`): caja del rostro + 5 puntos faciales. Funciona con varios rostros a la vez. |
-| **Reconocimiento** | Red **SFace** (`cv2.FaceRecognizerSF`): alinea el rostro y genera un vector de 128 dimensiones; se compara por similitud coseno con la galería de estudiantes. |
-| **Procesamiento** | Corrección automática de poca luz (**CLAHE** en espacio LAB), control de calidad de muestras (nitidez por **varianza del Laplaciano** y brillo), redimensionado para rendimiento, filtros de visualización (grises, **Canny**, mapa térmico) y **pixelado de desconocidos** (modo privacidad). |
-| **Tiempo real** | El navegador captura la cámara (`getUserMedia`), envía fotogramas JPEG a Django y muestra el video anotado por OpenCV (hasta ~12 FPS; el procesamiento toma ≈25 ms por fotograma). |
-| **Estabilidad** | La asistencia solo se registra tras **3 reconocimientos consecutivos** en 4 s (evita falsos positivos); restricción única por sesión en la BD; manejo de errores en cada capa. |
+- **Detección de rostros:** se usa el modelo YuNet de OpenCV para encontrar los rostros en el video.
+- **Reconocimiento facial:** se usa el modelo SFace de OpenCV para identificar a cada estudiante registrado.
+- **Procesamiento de imagen:** mejora automática cuando hay poca luz y filtros de visualización (escala de grises, bordes y mapa térmico).
+- **Registro de estudiantes:** se toman entre 3 y 5 fotos del rostro de cada estudiante.
+- **Sesiones de clase:** el docente abre una sesión y el sistema registra la asistencia automáticamente.
+- **Reportes:** lista de presentes y ausentes, porcentaje de asistencia y exportación a CSV.
+- **Modo privacidad:** los rostros de personas no registradas se muestran pixelados.
 
-Otras características:
-
-- Registro de estudiantes y **enrolamiento facial** (captura manual, automática de 5 fotos o subida de archivo).
-- Sesiones de clase con monitor en vivo, barra de progreso de confirmación y notificación al registrar.
-- Detalle por sesión: presentes (con **foto de evidencia**), ausentes, porcentaje y **exportación CSV**.
-- Panel con estadísticas, modo claro/oscuro automático y diseño adaptable a pantallas pequeñas.
-- Acceso protegido con usuario y contraseña (autenticación de Django).
-
-## Capturas
-
-| Panel de control | Registro de rostro |
-|---|---|
-| ![Panel](docs/img/02-panel.jpg) | ![Registro de rostro](docs/img/04-registro-rostro.jpg) |
-| **Detalle de sesión** | **Modo privacidad (desconocido pixelado)** |
-| ![Detalle de sesión](docs/img/06-detalle-sesion.jpg) | ![Privacidad](docs/img/07-privacidad-desconocido.jpg) |
-
-> Las fotos de prueba son retratos oficiales de la NASA (dominio público).
-
-## Arquitectura
-
-```
-Navegador (cámara)          Django                                  OpenCV (vision/)
-──────────────────          ──────                                  ────────────────
-getUserMedia ──JPEG──▶ /api/procesar/ ──▶ services.procesar_frame ──▶ preprocessing (CLAHE)
-                                                │                    detector (YuNet)
-<img> ◀──JPEG anotado + JSON──┘                 │                    recognizer (SFace)
-                                                ▼                    annotator (dibujo)
-                                   tracker (3 fotogramas) ──▶ PostgreSQL (Asistencia)
-```
+## Estructura del proyecto
 
 ```
 visionaula/
-├── config/                 # Configuración de Django (settings, urls)
-├── vision/                 # Módulo OpenCV reutilizable, sin dependencia de Django
-│   ├── codec.py            #   decodificar / codificar JPEG
-│   ├── preprocessing.py    #   CLAHE, calidad, filtros
-│   ├── detector.py         #   YuNet
-│   ├── recognizer.py       #   SFace + galería + similitud coseno
-│   ├── annotator.py        #   dibujo sobre el video
-│   ├── pipeline.py         #   orquestación
-│   └── model_store.py      #   descarga y verificación SHA-256 de modelos
-├── asistencia/             # App Django
-│   ├── models.py           #   Estudiante, MuestraRostro, SesionClase, Asistencia
-│   ├── services.py         #   lógica de negocio
-│   ├── tracker.py          #   confirmación temporal
-│   ├── api.py              #   endpoints JSON
-│   ├── views.py            #   vistas HTML
-│   ├── templates/  static/ #   interfaz web (HTML, CSS, JS)
-│   └── management/commands/descargar_modelos.py
-├── templates/              # base.html y login
-├── docs/                   # casos de prueba, guion del video, plantilla del informe
-├── modelos/                # aquí se descargan los .onnx (no se suben a GitHub)
+├── config/          Configuración del proyecto Django
+├── asistencia/      Aplicación principal (modelos, vistas, plantillas)
+├── vision/          Módulo de procesamiento con OpenCV
+├── templates/       Plantillas generales (base y login)
+├── modelos/         Modelos de OpenCV (se descargan con un comando)
+├── docs/            Casos de prueba y capturas
 ├── manage.py
-├── requirements.txt        # dependencias del proyecto
-├── ruff.toml               # reglas de estilo de código
-└── .env.example            # plantilla de variables de entorno
+└── requirements.txt
 ```
-
-## Requisitos
-
-- Python 3.10 o superior
-- PostgreSQL 14 o superior
-- Una cámara web y un navegador moderno (Chrome, Edge o Firefox)
 
 ## Instalación
 
-```bash
-git clone https://github.com/JulioVera18/visionaula.git
-cd visionaula
-python -m venv venv
-```
+1. Clonar el repositorio:
 
-Activar el entorno virtual:
+   ```bash
+   git clone https://github.com/JulioVera18/visionaula.git
+   cd visionaula
+   ```
 
-```bash
-venv\Scripts\activate          # Windows
-source venv/bin/activate       # Linux / macOS
-```
+2. Crear y activar el entorno virtual:
 
-```bash
-pip install -r requirements.txt
-copy .env.example .env         # Windows  (cp .env.example .env en Linux/macOS)
-```
+   ```bash
+   python -m venv venv
+   venv\Scripts\activate
+   ```
 
-Edite `.env`: coloque una `DJANGO_SECRET_KEY` y los datos de su PostgreSQL.
+3. Instalar las dependencias:
 
-### Base de datos PostgreSQL
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Cree la base de datos desde pgAdmin o con `psql`:
+4. Crear la base de datos en PostgreSQL:
 
-```sql
-CREATE DATABASE visionaula;
-```
+   ```sql
+   CREATE DATABASE visionaula;
+   ```
 
-Los datos de conexión (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`) se configuran en `.env`.
+5. Copiar el archivo `.env.example` con el nombre `.env` y colocar los datos de conexión a PostgreSQL.
 
-### Migraciones, modelos y usuario
+6. Aplicar las migraciones, descargar los modelos y crear un usuario:
 
-```bash
-python manage.py migrate
-python manage.py descargar_modelos
-python manage.py createsuperuser
-python manage.py runserver
-```
+   ```bash
+   python manage.py migrate
+   python manage.py descargar_modelos
+   python manage.py createsuperuser
+   ```
 
-Abra <http://localhost:8000> e inicie sesión.
+7. Ejecutar el servidor:
 
-> La cámara del navegador solo funciona en `localhost` o con HTTPS. Para usarla desde otra
-> computadora de la red se necesita HTTPS (por ejemplo, un proxy inverso con certificado).
+   ```bash
+   python manage.py runserver
+   ```
+
+8. Abrir en el navegador: <http://localhost:8000>
 
 ## Uso
 
-1. **Estudiantes → Nuevo estudiante**: registre código, nombres y apellidos.
-2. En **Registrar rostro**, encienda la cámara y use *Captura automática (5)*; gire levemente la cabeza entre capturas.
-3. **Sesiones → Iniciar sesión** con la asignatura y el tema.
-4. En el **Monitor en vivo**, pulse *Iniciar cámara*. Los rostros reconocidos aparecen en verde;
-   al confirmarse 3 veces se registra la asistencia (marco azul `[OK]`) y aparece en la lista lateral.
-5. Pruebe los filtros (CLAHE, grises, Canny, térmico) y el modo *Pixelar desconocidos*.
-6. Cierre la sesión y exporte el **CSV** desde el detalle.
+1. Iniciar sesión con el usuario creado.
+2. Ir a **Estudiantes**, registrar un estudiante y capturar fotos de su rostro.
+3. Ir a **Sesiones** e iniciar una sesión de clase.
+4. Abrir el **Monitor en vivo** y encender la cámara.
+5. Cuando el sistema reconoce a un estudiante, registra su asistencia automáticamente.
+6. Al terminar, cerrar la sesión y descargar el reporte en CSV.
+
+## Capturas
+
+**Reconocimiento facial**
+
+![Reconocimiento facial](docs/img/05-reconocimiento.jpg)
+
+**Panel de control**
+
+![Panel de control](docs/img/02-panel.jpg)
+
+**Detalle de una sesión**
+
+![Detalle de sesión](docs/img/06-detalle-sesion.jpg)
 
 ## Pruebas
 
-El sistema se probó en funcionamiento con los casos de prueba de
-[docs/CASOS_DE_PRUEBA.md](docs/CASOS_DE_PRUEBA.md): inicio de sesión, permisos de cámara,
-registro de rostro, reconocimiento, poca luz, filtros, modo privacidad, sesiones y exportación CSV.
+Los casos de prueba realizados se encuentran en el archivo
+[docs/CASOS_DE_PRUEBA.md](docs/CASOS_DE_PRUEBA.md).
 
-Estilo de código: `ruff check .` y `ruff format .` (configuración en `ruff.toml`).
+## Referencias
 
-## Configuración (`.env`)
-
-| Variable | Descripción | Valor por defecto |
-|---|---|---|
-| `DJANGO_SECRET_KEY` | Clave secreta de Django | obligatoria si `DEBUG=False` |
-| `DJANGO_DEBUG` | Modo desarrollo | `False` |
-| `DB_ENGINE` | `postgresql` o `sqlite` | `postgresql` |
-| `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Conexión a PostgreSQL | `visionaula`, `postgres`, —, `localhost`, `5432` |
-| `VISION_MATCH_THRESHOLD` | Similitud mínima para reconocer (0-1) | `0.40` |
-| `VISION_DETECTION_SCORE` | Confianza mínima de detección | `0.80` |
-| `VISION_CONFIRM_FRAMES` | Fotogramas consecutivos para registrar asistencia | `3` |
-| `VISION_MAX_SAMPLES` | Máximo de fotos por estudiante | `10` |
-
-## Seguridad y privacidad
-
-- Todas las vistas y la API requieren inicio de sesión; los formularios y la API usan token CSRF.
-- Las imágenes se validan (tamaño máximo 4 MB, formato y resolución) antes de procesarse.
-- Se guardan los **embeddings** (vectores numéricos) y una miniatura del rostro; el video no se almacena.
-- Las respuestas de error no exponen detalles internos; el CSV protege contra inyección de fórmulas.
-- Los secretos se leen de `.env`, que está excluido del repositorio.
-
-## Créditos
-
-- Modelos [YuNet](https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet) y
-  [SFace](https://github.com/opencv/opencv_zoo/tree/main/models/face_recognition_sface) de OpenCV Zoo.
-- Referencia: Pressman, R. S. (2005). *Ingeniería del software: un enfoque práctico*. McGraw-Hill.
+- Pressman, R. S. (2005). *Ingeniería del software: un enfoque práctico*. McGraw-Hill.
+- OpenCV Zoo: modelos YuNet y SFace. <https://github.com/opencv/opencv_zoo>
+- Documentación de Django. <https://docs.djangoproject.com/es/>
