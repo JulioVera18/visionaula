@@ -11,7 +11,8 @@ from . import annotator, preprocessing
 from .detector import FaceDetector, crop
 from .recognizer import DEFAULT_THRESHOLD, FaceEmbedder, Gallery, Match, match
 
-PROCESSING_MAX_SIDE = 1280
+OUTPUT_MAX_SIDE = 1920  # resolución del video devuelto (Full HD 1080p)
+DETECTION_MAX_SIDE = 960  # la detección corre sobre una copia reducida: mucho más rápida
 
 
 @dataclass(frozen=True)
@@ -71,11 +72,11 @@ class FaceEngine:
     ) -> FrameAnalysis:
         """Detecta y reconoce todos los rostros de un fotograma."""
         started = time.perf_counter()
-        frame = preprocessing.resize_max_side(image, PROCESSING_MAX_SIDE)
+        frame = preprocessing.resize_max_side(image, OUTPUT_MAX_SIDE)
         low_light = preprocessing.is_low_light(frame)
         working = preprocessing.enhance_lighting(frame) if low_light else frame
         with self._lock:
-            detections = self._detector.detect(working)
+            detections = self._detect(working)
             faces = tuple(
                 FaceResult(
                     box=d.box,
@@ -89,13 +90,20 @@ class FaceEngine:
         elapsed = (time.perf_counter() - started) * 1000
         return FrameAnalysis(frame, faces, low_light, round(elapsed, 1))
 
+    def _detect(self, frame: np.ndarray) -> list:
+        """Detecta en una copia reducida y lleva las coordenadas a `frame`.
+        El reconocimiento posterior usa la imagen en resolución completa."""
+        small = preprocessing.resize_max_side(frame, DETECTION_MAX_SIDE)
+        factor = frame.shape[1] / small.shape[1]
+        return [d.scaled(factor) for d in self._detector.detect(small)]
+
     def enrollment_sample(self, image: np.ndarray) -> EnrollmentSample:
         """Extrae el embedding de una foto que debe contener exactamente un rostro."""
-        frame = preprocessing.resize_max_side(image, PROCESSING_MAX_SIDE)
+        frame = preprocessing.resize_max_side(image, OUTPUT_MAX_SIDE)
         if preprocessing.is_low_light(frame):
             frame = preprocessing.enhance_lighting(frame)
         with self._lock:
-            detections = self._detector.detect(frame)
+            detections = self._detect(frame)
             if not detections:
                 raise EnrollmentError("No se detectó ningún rostro.")
             if len(detections) > 1:
@@ -119,19 +127,22 @@ class RenderOptions:
 def render(analysis: FrameAnalysis, names: dict, options: RenderOptions) -> np.ndarray:
     """Genera el fotograma anotado que se envía al navegador."""
     output = preprocessing.apply_view_filter(analysis.image, options.view_mode).copy()
+    scale = annotator.ui_scale(output)
     for face in analysis.faces:
-        _draw_face(output, face, names, options)
+        _draw_face(output, face, names, options, scale)
     hud = [
         f"Rostros: {len(analysis.faces)}  Reconocidos: {len(analysis.known)}",
         f"Procesamiento: {analysis.elapsed_ms:.0f} ms",
     ]
     if analysis.low_light:
         hud.append("Poca luz: mejora CLAHE aplicada")
-    annotator.draw_hud(output, hud)
+    annotator.draw_hud(output, hud, scale)
     return output
 
 
-def _draw_face(output: np.ndarray, face: FaceResult, names: dict, options: RenderOptions) -> None:
+def _draw_face(
+    output: np.ndarray, face: FaceResult, names: dict, options: RenderOptions, scale: float
+) -> None:
     label = face.match.label
     if label is None:
         if options.privacy:
@@ -142,8 +153,8 @@ def _draw_face(output: np.ndarray, face: FaceResult, names: dict, options: Rende
         color = annotator.COLOR_CONFIRMED if confirmed else annotator.COLOR_KNOWN
         mark = " [OK]" if confirmed else ""
         text = f"{names.get(label, label)} {face.match.similarity:.2f}{mark}"
-    annotator.draw_corners(output, face.box, color)
+    annotator.draw_corners(output, face.box, color, scale)
     if options.show_landmarks:
-        annotator.draw_landmarks(output, face.landmarks)
+        annotator.draw_landmarks(output, face.landmarks, scale)
     x, y, _, _ = face.box
-    annotator.draw_label(output, text, (x, y - 4), color)
+    annotator.draw_label(output, text, (x, y - int(4 * scale)), color, scale)

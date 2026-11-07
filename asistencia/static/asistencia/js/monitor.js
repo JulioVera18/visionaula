@@ -38,7 +38,9 @@ export function iniciarMonitor(config) {
     estado.generacion += 1;
     ui.boton.textContent = "Detener cámara";
     ui.placeholder.hidden = true;
-    mostrarEstado(ui.estado, config.sesion ? "Tomando asistencia…" : "Modo reconocimiento (sin registrar asistencia).");
+    const modo = config.sesion ? "Tomando asistencia…" : "Modo reconocimiento (sin registrar asistencia).";
+    const resolucion = ui.video.dataset.resolucion ? ` Cámara: ${ui.video.dataset.resolucion}.` : "";
+    mostrarEstado(ui.estado, modo + resolucion);
     bucle(estado.generacion);
   }
 

@@ -25,6 +25,22 @@ class FaceDetection:
     def area(self) -> int:
         return int(self.box[2] * self.box[3])
 
+    def scaled(self, factor: float) -> "FaceDetection":
+        """Devuelve una copia con coordenadas multiplicadas por `factor`
+        (para pasar de la imagen reducida usada al detectar a la imagen original)."""
+        if factor == 1:
+            return self
+        raw = self.raw.copy()
+        raw[:14] *= factor
+        return FaceDetection(
+            box=tuple(int(round(v * factor)) for v in self.box),
+            score=self.score,
+            landmarks=tuple(
+                (int(round(px * factor)), int(round(py * factor))) for px, py in self.landmarks
+            ),
+            raw=raw,
+        )
+
 
 class FaceDetector:
     def __init__(

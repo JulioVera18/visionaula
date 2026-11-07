@@ -1,6 +1,6 @@
 // Utilidades compartidas: acceso a la cámara, captura de fotogramas y envío al servidor.
 
-const MAX_ANCHO = 1280; // HD 720p: buena nitidez sin saturar el servidor
+const MAX_ANCHO = 1920; // Full HD 1080p (si la cámara lo permite)
 
 export function csrfToken() {
   const input = document.querySelector("input[name=csrfmiddlewaretoken]");
@@ -13,11 +13,13 @@ export async function encenderCamara(video) {
   }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+      video: { width: { ideal: 1920 }, height: { ideal: 1080 }, facingMode: "user" },
       audio: false,
     });
     video.srcObject = stream;
     await video.play();
+    const ajustes = stream.getVideoTracks()[0]?.getSettings() ?? {};
+    video.dataset.resolucion = ajustes.width ? `${ajustes.width}×${ajustes.height}` : "";
     return stream;
   } catch (error) {
     if (error.name === "NotAllowedError") throw new Error("Permiso de cámara denegado. Habilítelo en el navegador.");
