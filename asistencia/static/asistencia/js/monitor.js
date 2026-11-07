@@ -1,7 +1,13 @@
-// Monitor en vivo: envía fotogramas al servidor (OpenCV) y muestra el video anotado.
+// Monitor en vivo: el video se muestra directo de la cámara (fluido, resolución nativa)
+// y en paralelo se envían copias reducidas al servidor para que OpenCV las analice.
+// Los resultados se dibujan encima del video. Con un filtro o el modo privacidad
+// activos se muestra el fotograma procesado por OpenCV en el servidor.
 import { apagarCamara, capturarFotograma, encenderCamara, enviarImagen, mostrarEstado } from "./camara.js";
+import { dibujarOverlay, limpiarOverlay } from "./overlay.js";
 
-const INTERVALO_MIN_MS = 80;      // tope ~12 FPS para no saturar el servidor
+const ANCHO_ANALISIS = 1280;      // resolución enviada al servidor para analizar
+const CALIDAD_ANALISIS = 0.8;
+const INTERVALO_MIN_MS = 60;      // tope ~16 análisis por segundo
 const ESPERA_ERROR_MS = 1500;     // pausa tras un error antes de reintentar
 const MAX_ERRORES_SEGUIDOS = 5;
 
@@ -9,6 +15,7 @@ export function iniciarMonitor(config) {
   const $ = (id) => document.getElementById(id);
   const ui = {
     video: $("video"), salida: $("salida"), canvas: $("canvas"), placeholder: $("placeholder"),
+    overlay: $("overlay"),
     boton: $("btn-camara"), modo: $("modo"), privacidad: $("privacidad"), estado: $("estado"),
     rostros: $("m-rostros"), desc: $("m-desc"), ms: $("m-ms"), fps: $("m-fps"),
     enVivo: $("en-vivo"), registrados: $("registrados"), resumen: $("resumen"), barra: $("barra"),
@@ -38,6 +45,7 @@ export function iniciarMonitor(config) {
     estado.generacion += 1;
     ui.boton.textContent = "Detener cámara";
     ui.placeholder.hidden = true;
+    ui.video.hidden = false;
     const modo = config.sesion ? "Tomando asistencia…" : "Modo reconocimiento (sin registrar asistencia).";
     const resolucion = ui.video.dataset.resolucion ? ` Cámara: ${ui.video.dataset.resolucion}.` : "";
     mostrarEstado(ui.estado, modo + resolucion);
@@ -52,6 +60,8 @@ export function iniciarMonitor(config) {
     estado.stream = null;
     ui.boton.textContent = "Iniciar cámara";
     ui.salida.hidden = true;
+    ui.video.hidden = true;
+    limpiarOverlay(ui.overlay);
     ui.placeholder.hidden = false;
     mostrarEstado(ui.estado, "Cámara detenida.");
   }
@@ -78,13 +88,17 @@ export function iniciarMonitor(config) {
     }
   }
 
+  // La imagen procesada solo se pide cuando hace falta (filtro o privacidad).
+  const necesitaImagen = () => ui.modo.value !== "normal" || ui.privacidad.checked;
+
   async function procesar() {
-    const blob = await capturarFotograma(ui.video, ui.canvas, 0.85);
+    const blob = await capturarFotograma(ui.video, ui.canvas, CALIDAD_ANALISIS, ANCHO_ANALISIS);
     estado.abort = new AbortController();
     return enviarImagen(config.url, blob, {
       sesion: config.sesion,
       modo: ui.modo.value,
       privacidad: ui.privacidad.checked ? "1" : "0",
+      imagen: necesitaImagen() ? "1" : "0",
     }, estado.abort.signal);
   }
 
@@ -98,8 +112,14 @@ export function iniciarMonitor(config) {
   }
 
   function pintar(data) {
-    ui.salida.src = data.imagen;
-    ui.salida.hidden = false;
+    if (data.imagen) {
+      ui.salida.src = data.imagen;
+      ui.salida.hidden = false;
+      limpiarOverlay(ui.overlay);
+    } else {
+      ui.salida.hidden = true;
+      dibujarOverlay(ui.overlay, ui.video, data.rostros, data.ancho);
+    }
     ui.rostros.textContent = data.total_rostros;
     ui.desc.textContent = data.desconocidos;
     ui.ms.textContent = `${Math.round(data.ms)} ms`;

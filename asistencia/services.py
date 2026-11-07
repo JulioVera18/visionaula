@@ -142,6 +142,10 @@ class FrameRequest:
     sesion: SesionClase | None
     view_mode: str = "normal"
     privacy: bool = False
+    # False: solo se devuelven los datos de los rostros y el navegador los dibuja
+    # sobre el video en vivo (mucho más fluido). True: se devuelve el fotograma
+    # procesado por OpenCV (necesario para filtros y modo privacidad).
+    with_image: bool = True
 
 
 def _confirmados(sesion: SesionClase | None) -> set:
@@ -188,6 +192,7 @@ def _face_payload(face, names: dict, confirmados: set, sesion) -> dict:
     progress = get_tracker().progress(sesion.pk, label) if (sesion and label) else 0.0
     return {
         "box": list(face.box),
+        "puntos": [list(point) for point in face.landmarks],
         "estudiante_id": label,
         "nombre": names.get(label) if label else None,
         "similitud": face.match.similarity,
@@ -215,14 +220,19 @@ def procesar_frame(request: FrameRequest) -> dict:
     analysis = get_engine().analyze(image, gallery, settings.VISION["MATCH_THRESHOLD"])
     confirmados = _confirmados(request.sesion)
     nuevas = _actualizar_asistencias(request.sesion, analysis, confirmados)
-    options = RenderOptions(
-        view_mode=request.view_mode,
-        privacy=request.privacy,
-        confirmed_labels=frozenset(confirmados),
-    )
-    output = render(analysis, names, options)
+    imagen = None
+    if request.with_image:
+        options = RenderOptions(
+            view_mode=request.view_mode,
+            privacy=request.privacy,
+            confirmed_labels=frozenset(confirmados),
+        )
+        imagen = codec.to_data_url(render(analysis, names, options), 85)
+    alto, ancho = analysis.image.shape[:2]
     return {
-        "imagen": codec.to_data_url(output, 85),
+        "imagen": imagen,
+        "ancho": ancho,
+        "alto": alto,
         "rostros": [_face_payload(f, names, confirmados, request.sesion) for f in analysis.faces],
         "total_rostros": len(analysis.faces),
         "desconocidos": analysis.unknown_count,

@@ -34,8 +34,8 @@ export function apagarCamara(stream) {
 }
 
 // Copia el fotograma actual del <video> a un canvas y lo devuelve como JPEG.
-export function capturarFotograma(video, canvas, calidad = 0.8) {
-  const escala = Math.min(1, MAX_ANCHO / video.videoWidth);
+export function capturarFotograma(video, canvas, calidad = 0.8, maxAncho = MAX_ANCHO) {
+  const escala = Math.min(1, maxAncho / video.videoWidth);
   canvas.width = Math.round(video.videoWidth * escala);
   canvas.height = Math.round(video.videoHeight * escala);
   canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);

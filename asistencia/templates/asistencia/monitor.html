@@ -22,6 +22,7 @@
   <section class="card">
     <div class="video-box">
       <video id="video" autoplay playsinline muted hidden></video>
+      <canvas id="overlay" class="overlay" aria-hidden="true"></canvas>
       <img id="salida" alt="Video procesado por OpenCV" hidden>
       <div id="placeholder" class="placeholder">La cámara está apagada</div>
     </div>
@@ -36,7 +37,7 @@
       <div><span class="stat-label">Rostros</span><b id="m-rostros">0</b></div>
       <div><span class="stat-label">Desconocidos</span><b id="m-desc">0</b></div>
       <div><span class="stat-label">Proceso</span><b id="m-ms">–</b></div>
-      <div><span class="stat-label">FPS</span><b id="m-fps">–</b></div>
+      <div><span class="stat-label">Análisis/s</span><b id="m-fps">–</b></div>
     </div>
     <p id="estado" class="status" role="status" aria-live="polite"></p>
   </section>

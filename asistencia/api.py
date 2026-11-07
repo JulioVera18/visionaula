@@ -79,6 +79,7 @@ def procesar_frame(request):
         sesion=_sesion_desde(request),
         view_mode=view_mode,
         privacy=request.POST.get("privacidad") == "1",
+        with_image=request.POST.get("imagen", "1") != "0",
     )
     return json_ok(services.procesar_frame(frame_request))
 
