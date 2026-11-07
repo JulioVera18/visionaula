@@ -1,20 +1,12 @@
 # VisionAula: Control de asistencia con reconocimiento facial
 
-**Universidad Estatal de Milagro (UNEMI)**
-Facultad de Ciencias e Ingenierías, Carrera de Software
-
-- **Asignatura:** Construcción de Software
-- **Práctica:** N.º 3 (Guía G003-S12)
-- **Docente de la asignatura:** Guevara Reyes Rodrigo Josué
-- **Docente de la práctica:** Almache Sanisaca Mariana Madeleine
-
 ## Integrantes
 
-1. Nombre del integrante 1
-2. Nombre del integrante 2
-3. Nombre del integrante 3
-4. Nombre del integrante 4
-5. Nombre del integrante 5
+1. Flavio Josueph Morales Pluas
+2. Fernando Alexander Pazmiño Soto
+3. Grace Valeria Roa Cornejo
+4. Julio Andrés Vera Garcias
+5. Mauro Marcelo López León
 
 ## Descripción
 
