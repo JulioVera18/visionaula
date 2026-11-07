@@ -1,4 +1,4 @@
-﻿# VisionAula: Control de asistencia con reconocimiento facial
+# VisionAula: Control de asistencia con reconocimiento facial
 
 **Universidad Estatal de Milagro (UNEMI)**
 Facultad de Ciencias e Ingenierías, Carrera de Software
