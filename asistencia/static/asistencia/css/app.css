@@ -151,6 +151,7 @@ input[type="text"], input[type="email"], input[type="search"], input[type="passw
 .form-inline { max-width: none; grid-template-columns: 1fr 1fr auto; align-items: end; }
 .form-actions { display: flex; gap: 8px; justify-content: flex-end; }
 .field-error { color: var(--bad); font-size: 0.82rem; font-weight: 400; }
+.field-help { color: var(--ink-2); font-size: 0.8rem; font-weight: 400; }
 .search { display: flex; gap: 8px; margin-bottom: 16px; max-width: 520px; }
 .upload { display: block; margin-top: 12px; font-size: 0.88rem; color: var(--ink-2); }
 

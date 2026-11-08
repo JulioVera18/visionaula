@@ -7,18 +7,18 @@
 </header>
 
 <form class="search" method="get">
-  <input type="search" name="q" value="{{ q }}" placeholder="Buscar por nombre, apellido o código" aria-label="Buscar">
+  <input type="search" name="q" value="{{ q }}" placeholder="Buscar por nombre, apellido o cédula" aria-label="Buscar">
   <button class="btn" type="submit">Buscar</button>
 </form>
 
 <section class="card">
   {% if estudiantes %}
   <div class="table-wrap"><table>
-    <thead><tr><th>Código</th><th>Estudiante</th><th>Curso</th><th>Muestras</th><th>Estado</th><th></th></tr></thead>
+    <thead><tr><th>Cédula</th><th>Estudiante</th><th>Curso</th><th>Muestras</th><th>Estado</th><th></th></tr></thead>
     <tbody>
     {% for e in estudiantes %}
       <tr>
-        <td><code>{{ e.codigo }}</code></td>
+        <td><code>{{ e.cedula }}</code></td>
         <td>{{ e.apellidos }} {{ e.nombres }}</td>
         <td>{{ e.curso|default:"—" }}</td>
         <td>{% if e.n_muestras %}<span class="badge badge-ok">{{ e.n_muestras }}</span>{% else %}<span class="badge badge-warn">Sin rostro</span>{% endif %}</td>

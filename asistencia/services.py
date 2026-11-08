@@ -125,7 +125,7 @@ def registrar_muestra(estudiante: Estudiante, image_bytes: bytes) -> MuestraRost
         embedding=to_bytes(sample.embedding),
         calidad=sample.quality.score,
     )
-    filename = f"{estudiante.codigo}.jpg"
+    filename = f"{estudiante.cedula}.jpg"
     muestra.imagen.save(filename, ContentFile(codec.encode_jpeg(sample.face_crop, 90)), save=False)
     muestra.save()
     return muestra
@@ -206,7 +206,7 @@ def _asistencia_payload(asistencia: Asistencia) -> dict:
     return {
         "id": asistencia.pk,
         "estudiante": estudiante.nombre_completo,
-        "codigo": estudiante.codigo,
+        "cedula": estudiante.cedula,
         "similitud": asistencia.similitud,
         "hora": asistencia.registrado.isoformat(),
         "evidencia": asistencia.evidencia.url if asistencia.evidencia else "",

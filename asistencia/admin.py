@@ -12,9 +12,9 @@ class MuestraInline(admin.TabularInline):
 
 @admin.register(Estudiante)
 class EstudianteAdmin(admin.ModelAdmin):
-    list_display = ("codigo", "apellidos", "nombres", "curso", "activo")
+    list_display = ("cedula", "apellidos", "nombres", "curso", "activo")
     list_filter = ("activo", "curso")
-    search_fields = ("codigo", "nombres", "apellidos")
+    search_fields = ("cedula", "nombres", "apellidos")
     inlines = [MuestraInline]
 
 
@@ -28,4 +28,4 @@ class SesionClaseAdmin(admin.ModelAdmin):
 class AsistenciaAdmin(admin.ModelAdmin):
     list_display = ("estudiante", "sesion", "registrado", "similitud")
     list_filter = ("sesion",)
-    search_fields = ("estudiante__nombres", "estudiante__apellidos", "estudiante__codigo")
+    search_fields = ("estudiante__nombres", "estudiante__apellidos", "estudiante__cedula")

@@ -11,7 +11,8 @@ Marque el resultado obtenido en la última columna.
 | CP-01 | Inicio de sesión | Abrir `/`, ingresar usuario y contraseña válidos | Se muestra el Panel de control | ☐ OK ☐ Falla |
 | CP-02 | Acceso protegido | Sin iniciar sesión, abrir `/monitor/` | Redirige a la página de login | ☐ OK ☐ Falla |
 | CP-03 | Registrar estudiante | Estudiantes → Nuevo, llenar datos | Se guarda y abre la página *Registrar rostro* | ☐ OK ☐ Falla |
-| CP-04 | Validación de código | Registrar con código `x; DROP` | Error "Use de 3 a 20 letras, números o guiones" | ☐ OK ☐ Falla |
+| CP-04 | Validación de cédula | Registrar con la cédula `0912345678` (dígito verificador incorrecto) | Error "La cédula no es válida: el dígito verificador no coincide." | ☐ OK ☐ Falla |
+| CP-04b | Cédula duplicada | Registrar dos estudiantes con la misma cédula | Error "Ya existe un estudiante registrado con esta cédula." | ☐ OK ☐ Falla |
 | CP-05 | Permiso de cámara denegado | Bloquear la cámara en el navegador y pulsar *Encender cámara* | Mensaje "Permiso de cámara denegado…" sin que la página falle | ☐ OK ☐ Falla |
 | CP-06 | Enrolamiento automático | Encender cámara → *Captura automática (5)* | Se guardan 5 muestras con su puntaje de calidad | ☐ OK ☐ Falla |
 | CP-07 | Enrolamiento sin rostro | Tapar la cámara y pulsar *Capturar foto* | "No se detectó ningún rostro." | ☐ OK ☐ Falla |

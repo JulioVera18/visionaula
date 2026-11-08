@@ -65,7 +65,7 @@ class EstudianteListView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(
                 Q(nombres__icontains=termino)
                 | Q(apellidos__icontains=termino)
-                | Q(codigo__icontains=termino)
+                | Q(cedula__icontains=termino)
             )
         return queryset
 
@@ -189,14 +189,14 @@ def sesion_csv(request, pk: int):
     response["Content-Disposition"] = f'attachment; filename="asistencia_sesion_{sesion.pk}.csv"'
     response.write("﻿")  # BOM para que Excel respete las tildes
     writer = csv.writer(response)
-    writer.writerow(["Código", "Apellidos", "Nombres", "Estado", "Hora", "Similitud"])
+    writer.writerow(["Cédula", "Apellidos", "Nombres", "Estado", "Hora", "Similitud"])
     presentes = {a.estudiante_id: a for a in sesion.asistencias.all()}
     for estudiante in Estudiante.objects.filter(activo=True):
         asistencia = presentes.get(estudiante.pk)
         hora = timezone.localtime(asistencia.registrado).strftime("%H:%M:%S") if asistencia else ""
         writer.writerow(
             [
-                _csv_seguro(estudiante.codigo),
+                _csv_seguro(estudiante.cedula),
                 _csv_seguro(estudiante.apellidos),
                 _csv_seguro(estudiante.nombres),
                 "Presente" if asistencia else "Ausente",

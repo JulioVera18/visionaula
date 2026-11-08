@@ -40,7 +40,7 @@
   <section class="card">
     <h2>Ausentes</h2>
     {% if ausentes %}
-    <ul class="plain">{% for e in ausentes %}<li>{{ e.apellidos }} {{ e.nombres }} <code>{{ e.codigo }}</code></li>{% endfor %}</ul>
+    <ul class="plain">{% for e in ausentes %}<li>{{ e.apellidos }} {{ e.nombres }} <code>{{ e.cedula }}</code></li>{% endfor %}</ul>
     {% else %}<p class="muted">¡Asistencia completa!</p>{% endif %}
   </section>
 </div>

@@ -4,23 +4,24 @@ from datetime import datetime
 from datetime import timezone as dt_timezone
 
 from django.conf import settings
-from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from vision.recognizer import from_bytes
 
-EPOCH = datetime(1970, 1, 1, tzinfo=dt_timezone.utc)
+from .validators import LONGITUD_CEDULA, validar_cedula_ecuatoriana
 
-codigo_validator = RegexValidator(
-    r"^[A-Za-z0-9-]{3,20}$", "Use de 3 a 20 letras, números o guiones."
-)
+EPOCH = datetime(1970, 1, 1, tzinfo=dt_timezone.utc)
 
 
 class Estudiante(models.Model):
-    codigo = models.CharField(
-        "código / cédula", max_length=20, unique=True, validators=[codigo_validator]
+    cedula = models.CharField(
+        "cédula",
+        max_length=LONGITUD_CEDULA,
+        unique=True,
+        validators=[validar_cedula_ecuatoriana],
+        error_messages={"unique": "Ya existe un estudiante registrado con esta cédula."},
     )
     nombres = models.CharField(max_length=80)
     apellidos = models.CharField(max_length=80)
@@ -33,7 +34,7 @@ class Estudiante(models.Model):
         ordering = ["apellidos", "nombres"]
 
     def __str__(self) -> str:
-        return f"{self.apellidos} {self.nombres} ({self.codigo})"
+        return f"{self.apellidos} {self.nombres} ({self.cedula})"
 
     @property
     def nombre_completo(self) -> str:
