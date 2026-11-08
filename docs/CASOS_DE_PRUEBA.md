@@ -29,7 +29,7 @@ Marque el resultado obtenido en la última columna.
 | CP-18 | Varios rostros | 2-3 estudiantes registrados a la vez | Todos reconocidos y registrados | ☐ OK ☐ Falla |
 | CP-19 | Poca luz | Apagar la luz del aula / bajar el brillo | Aviso "Poca luz: mejora CLAHE aplicada" y el reconocimiento continúa | ☐ OK ☐ Falla |
 | CP-20 | Filtros de procesamiento | Cambiar filtro a Grises, Bordes (Canny), Térmico, CLAHE | El video cambia en vivo y sigue mostrando detecciones | ☐ OK ☐ Falla |
-| CP-21 | Modo privacidad | Elegir *Pixelar desconocidos* y luego *Pixelar todos* | Primero solo se pixelan los desconocidos; luego todos los rostros | ☐ OK ☐ Falla |
+| CP-21 | Privacidad automática | Poner frente a la cámara a una persona registrada y a otra no registrada | La no registrada aparece pixelada; la registrada se ve normal | ☐ OK ☐ Falla |
 | CP-22 | Monitor sin sesión | Abrir el monitor sin sesión activa | Reconoce rostros pero no registra asistencia | ☐ OK ☐ Falla |
 | CP-23 | Cerrar sesión de clase | Detalle → *Cerrar sesión* | Estado "Cerrada"; ya no registra asistencias | ☐ OK ☐ Falla |
 | CP-24 | Estadísticas | Abrir el detalle de la sesión | Inscritos, presentes, ausentes y porcentaje correctos | ☐ OK ☐ Falla |
@@ -49,5 +49,5 @@ Ejecutada con dos retratos de dominio público (NASA) a través de la API comple
 | Reconocer misma persona (imagen espejada y oscurecida al 45 %) | Reconocido, similitud 0.94, CLAHE activado automáticamente |
 | Confirmación de asistencia | Registrada al 3er fotograma (progreso 0.33 → 0.67 → 1.0) |
 | Dos personas en el mismo cuadro | Ambas reconocidas (0.95 y 0.92) y registradas |
-| Persona no registrada | "Desconocido" con similitud 0.22, pixelada en modo privacidad |
+| Persona no registrada | "Desconocido" con similitud 0.22, pixelada automáticamente |
 | Tiempo de procesamiento por fotograma | ≈ 21 – 25 ms (sin contar el primer fotograma) |

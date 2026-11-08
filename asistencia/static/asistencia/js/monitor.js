@@ -19,7 +19,7 @@ export function iniciarMonitor(config) {
   const ui = {
     video: $("video"), salida: $("salida"), canvas: $("canvas"), placeholder: $("placeholder"),
     overlay: $("overlay"),
-    boton: $("btn-camara"), modo: $("modo"), privacidad: $("privacidad"), estado: $("estado"),
+    boton: $("btn-camara"), modo: $("modo"), estado: $("estado"),
     rostros: $("m-rostros"), desc: $("m-desc"), ms: $("m-ms"), fps: $("m-fps"),
     enVivo: $("en-vivo"), registrados: $("registrados"), resumen: $("resumen"), barra: $("barra"),
     toast: $("toast"),
@@ -103,8 +103,8 @@ export function iniciarMonitor(config) {
     }
   }
 
-  // Solo los filtros necesitan la imagen procesada por OpenCV; la privacidad se
-  // aplica en el navegador sobre el video en vivo.
+  // Solo los filtros necesitan la imagen procesada por OpenCV; el pixelado de los
+  // desconocidos se aplica en el navegador sobre el video en vivo.
   const necesitaImagen = () => ui.modo.value !== "normal";
 
   async function procesar(lienzo) {
@@ -118,7 +118,6 @@ export function iniciarMonitor(config) {
       const data = await enviarImagen(config.url, blob, {
         sesion: config.sesion,
         modo: ui.modo.value,
-        privacidad: ui.privacidad.value,
         imagen: conImagen ? "1" : "0",
       }, control.signal);
       return { data, secuencia };
@@ -128,12 +127,12 @@ export function iniciarMonitor(config) {
   }
 
   // Redibuja los últimos resultados en cada cuadro del video, así el pixelado
-  // de privacidad sigue al video en tiempo real.
+  // de los desconocidos sigue al video en tiempo real.
   function redibujar(generacion) {
     if (!estado.activo || estado.generacion !== generacion) return;
     const r = estado.resultado;
     if (r && !r.imagen) {
-      dibujarOverlay(ui.overlay, ui.video, r.rostros, r.ancho, { privacidad: ui.privacidad.value });
+      dibujarOverlay(ui.overlay, ui.video, r.rostros, r.ancho);
     }
     requestAnimationFrame(() => redibujar(generacion));
   }
@@ -156,7 +155,7 @@ export function iniciarMonitor(config) {
     } else {
       ui.salida.hidden = true;
       // También se dibuja aquí por si el navegador pausa requestAnimationFrame.
-      dibujarOverlay(ui.overlay, ui.video, data.rostros, data.ancho, { privacidad: ui.privacidad.value });
+      dibujarOverlay(ui.overlay, ui.video, data.rostros, data.ancho);
     }
     const ahora = performance.now();
     ui.fps.textContent = (1000 / Math.max(ahora - estado.ultimoInstante, 1)).toFixed(1);

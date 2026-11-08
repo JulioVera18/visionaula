@@ -11,7 +11,7 @@ from django.db.models import Count, Max
 
 from vision import codec
 from vision.model_store import require_model
-from vision.pipeline import PRIVACY_NONE, EnrollmentError, FaceEngine, RenderOptions, render
+from vision.pipeline import EnrollmentError, FaceEngine, RenderOptions, render
 from vision.recognizer import build_gallery, to_bytes
 
 from .models import Asistencia, Estudiante, MuestraRostro, SesionClase
@@ -141,10 +141,9 @@ class FrameRequest:
     image_bytes: bytes
     sesion: SesionClase | None
     view_mode: str = "normal"
-    privacy: str = PRIVACY_NONE
     # False: solo se devuelven los datos de los rostros y el navegador los dibuja
     # sobre el video en vivo (mucho más fluido). True: se devuelve el fotograma
-    # procesado por OpenCV (necesario para filtros y modo privacidad).
+    # procesado por OpenCV (necesario para los filtros).
     with_image: bool = True
 
 
@@ -224,7 +223,6 @@ def procesar_frame(request: FrameRequest) -> dict:
     if request.with_image:
         options = RenderOptions(
             view_mode=request.view_mode,
-            privacy=request.privacy,
             confirmed_labels=frozenset(confirmados),
         )
         imagen = codec.to_data_url(render(analysis, names, options), 75)  # liviano: menos lag

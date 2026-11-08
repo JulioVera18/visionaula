@@ -31,13 +31,7 @@
       <label>Filtro
         <select id="modo">{% for key, label in filtros %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select>
       </label>
-      <label>Privacidad
-        <select id="privacidad">
-          <option value="no">Sin pixelar</option>
-          <option value="desconocidos">Pixelar desconocidos</option>
-          <option value="todos">Pixelar todos</option>
-        </select>
-      </label>
+      <span class="muted">🔒 Los rostros no registrados se pixelan automáticamente</span>
     </div>
     <div class="metrics">
       <div><span class="stat-label">Rostros</span><b id="m-rostros">0</b></div>

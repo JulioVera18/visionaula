@@ -77,7 +77,7 @@ def draw_landmarks(image: np.ndarray, landmarks: tuple, scale: float = 1.0) -> N
 
 
 def pixelate(image: np.ndarray, box: tuple, blocks: int = 10) -> None:
-    """Pixela una región (modo privacidad para rostros desconocidos)."""
+    """Pixela una región (privacidad: rostros no registrados)."""
     x, y, w, h = box
     region = image[y : y + h, x : x + w]
     if region.size == 0:

@@ -39,7 +39,7 @@ una interfaz web interactiva.
 - **Registro de estudiantes:** se toman entre 3 y 5 fotos del rostro de cada estudiante.
 - **Sesiones de clase:** el docente abre una sesión y el sistema registra la asistencia automáticamente.
 - **Reportes:** lista de presentes y ausentes, porcentaje de asistencia y exportación a CSV.
-- **Modo privacidad:** pixela los rostros de personas no registradas o todos los rostros.
+- **Privacidad automática:** si la persona no está registrada (sin registro ni fotos), su rostro se pixela; si está registrada, se muestra su cara.
 
 ## Estructura del proyecto
 

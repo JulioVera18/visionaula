@@ -116,21 +116,9 @@ class FaceEngine:
         return EnrollmentSample(embedding, crop(frame, detections[0].box), quality)
 
 
-# Modo privacidad: qué rostros se pixelan.
-PRIVACY_NONE = "no"
-PRIVACY_UNKNOWN = "desconocidos"
-PRIVACY_ALL = "todos"
-PRIVACY_MODES = (PRIVACY_NONE, PRIVACY_UNKNOWN, PRIVACY_ALL)
-
-
-def should_pixelate(privacy: str, label) -> bool:
-    return privacy == PRIVACY_ALL or (privacy == PRIVACY_UNKNOWN and label is None)
-
-
 @dataclass(frozen=True)
 class RenderOptions:
     view_mode: str = "normal"
-    privacy: str = PRIVACY_NONE
     show_landmarks: bool = True
     confirmed_labels: frozenset = frozenset()
 
@@ -155,9 +143,9 @@ def _draw_face(
     output: np.ndarray, face: FaceResult, names: dict, options: RenderOptions, scale: float
 ) -> None:
     label = face.match.label
-    if should_pixelate(options.privacy, label):
-        annotator.pixelate(output, face.box)
     if label is None:
+        # Privacidad: quien no está registrado se pixela automáticamente.
+        annotator.pixelate(output, face.box)
         color, text = annotator.COLOR_UNKNOWN, f"Desconocido {face.match.similarity:.2f}"
     else:
         confirmed = label in options.confirmed_labels
