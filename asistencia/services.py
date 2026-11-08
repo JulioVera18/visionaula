@@ -227,7 +227,7 @@ def procesar_frame(request: FrameRequest) -> dict:
             privacy=request.privacy,
             confirmed_labels=frozenset(confirmados),
         )
-        imagen = codec.to_data_url(render(analysis, names, options), 85)
+        imagen = codec.to_data_url(render(analysis, names, options), 75)  # liviano: menos lag
     alto, ancho = analysis.image.shape[:2]
     return {
         "imagen": imagen,

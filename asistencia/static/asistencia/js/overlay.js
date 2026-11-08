@@ -13,19 +13,43 @@ export function limpiarOverlay(canvas) {
   canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
 }
 
+const BLOQUES_PIXELADO = 10;
+
 /**
  * @param {HTMLCanvasElement} canvas  lienzo superpuesto al video
  * @param {HTMLVideoElement} video
  * @param {Array} rostros  rostros devueltos por /api/procesar/
  * @param {number} ancho  ancho de la imagen que analizó el servidor
+ * @param {{privacidad?: boolean}} opciones  privacidad: pixelar rostros desconocidos
  */
-export function dibujarOverlay(canvas, video, rostros, ancho) {
+export function dibujarOverlay(canvas, video, rostros, ancho, opciones = {}) {
   const ctx = prepararLienzo(canvas);
   if (!video.videoWidth || !ancho) return;
   const area = areaVisible(canvas, video);
   const k = area.ancho / ancho;
   const punto = (x, y) => [area.x + x * k, area.y + y * k];
+  if (opciones.privacidad) {
+    const escalaVideo = video.videoWidth / ancho;
+    rostros.filter((r) => r.estudiante_id === null)
+      .forEach((r) => pixelar(ctx, video, r.box, escalaVideo, punto, k));
+  }
   rostros.forEach((rostro) => dibujarRostro(ctx, rostro, punto, k));
+}
+
+// Copia la región del rostro desde el video en muy baja resolución y la amplía
+// sin suavizado: el resultado es un pixelado que sigue al video en tiempo real.
+function pixelar(ctx, video, box, escalaVideo, punto, k) {
+  const [bx, by, bw, bh] = box;
+  const [x, y] = punto(bx, by);
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  const tmp = pixelar.lienzo || (pixelar.lienzo = document.createElement("canvas"));
+  tmp.width = BLOQUES_PIXELADO;
+  tmp.height = BLOQUES_PIXELADO;
+  tmp.getContext("2d").drawImage(video, bx * escalaVideo, by * escalaVideo, bw * escalaVideo,
+    bh * escalaVideo, 0, 0, BLOQUES_PIXELADO, BLOQUES_PIXELADO);
+  ctx.drawImage(tmp, x, y, bw * k, bh * k);
+  ctx.restore();
 }
 
 function prepararLienzo(canvas) {

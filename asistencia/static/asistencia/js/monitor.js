@@ -1,14 +1,17 @@
 // Monitor en vivo: el video se muestra directo de la cámara (fluido, resolución nativa)
 // y en paralelo se envían copias reducidas al servidor para que OpenCV las analice.
-// Los resultados se dibujan encima del video. Con un filtro o el modo privacidad
-// activos se muestra el fotograma procesado por OpenCV en el servidor.
+// Los resultados se dibujan encima del video en cada cuadro (requestAnimationFrame).
+// Con un filtro activo se muestra el fotograma procesado por OpenCV en el servidor.
 import { apagarCamara, capturarFotograma, encenderCamara, enviarImagen, mostrarEstado } from "./camara.js";
 import { dibujarOverlay, limpiarOverlay } from "./overlay.js";
 
-const ANCHO_ANALISIS = 1280;      // resolución enviada al servidor para analizar
-const CALIDAD_ANALISIS = 0.8;
-const INTERVALO_MIN_MS = 60;      // tope ~16 análisis por segundo
-const ESPERA_ERROR_MS = 1500;     // pausa tras un error antes de reintentar
+const ENVIO = {
+  normal: { ancho: 1280, calidad: 0.8 },  // solo análisis: buena precisión
+  filtro: { ancho: 960, calidad: 0.7 },   // con imagen de vuelta: liviano para menos lag
+};
+const PETICIONES_EN_PARALELO = 2;  // mientras el servidor procesa una, se envía la siguiente
+const INTERVALO_MIN_MS = 40;       // tope por trabajador
+const ESPERA_ERROR_MS = 1500;      // pausa tras un error antes de reintentar
 const MAX_ERRORES_SEGUIDOS = 5;
 
 export function iniciarMonitor(config) {
@@ -23,8 +26,12 @@ export function iniciarMonitor(config) {
   };
   // `generacion` identifica cada arranque: un bucle viejo que despierta tras un
   // Detener/Iniciar rápido detecta que ya no es el vigente y termina.
+  // `secuencia` numera cada fotograma enviado; una respuesta más vieja que la ya
+  // mostrada se descarta (con peticiones en paralelo pueden llegar desordenadas).
   const estado = {
-    stream: null, activo: false, errores: 0, presentes: config.presentes, abort: null, generacion: 0,
+    stream: null, activo: false, errores: 0, presentes: config.presentes, generacion: 0,
+    peticiones: new Set(), secuencia: 0, ultimaMostrada: 0, ultimoInstante: 0,
+    resultado: null,  // último análisis, redibujado en cada cuadro del video
   };
 
   ui.boton.addEventListener("click", () => (estado.activo ? detener() : iniciar()));
@@ -49,13 +56,18 @@ export function iniciarMonitor(config) {
     const modo = config.sesion ? "Tomando asistencia…" : "Modo reconocimiento (sin registrar asistencia).";
     const resolucion = ui.video.dataset.resolucion ? ` Cámara: ${ui.video.dataset.resolucion}.` : "";
     mostrarEstado(ui.estado, modo + resolucion);
-    bucle(estado.generacion);
+    estado.resultado = null;
+    estado.ultimoInstante = performance.now();
+    for (let i = 0; i < PETICIONES_EN_PARALELO; i++) bucle(estado.generacion);
+    requestAnimationFrame(() => redibujar(estado.generacion));
   }
 
   function detener() {
     estado.activo = false;
     estado.generacion += 1;
-    estado.abort?.abort();
+    estado.peticiones.forEach((c) => c.abort());
+    estado.peticiones.clear();
+    estado.resultado = null;
     apagarCamara(estado.stream);
     estado.stream = null;
     ui.boton.textContent = "Iniciar cámara";
@@ -66,19 +78,22 @@ export function iniciarMonitor(config) {
     mostrarEstado(ui.estado, "Cámara detenida.");
   }
 
+  // Cada trabajador captura, envía y espera su respuesta; varios en paralelo
+  // aprovechan el tiempo de subida mientras el servidor procesa otro fotograma.
   async function bucle(generacion) {
     const vigente = () => estado.activo && estado.generacion === generacion;
-    let ultimo = performance.now();
+    const lienzo = document.createElement("canvas");  // uno por trabajador
     while (vigente()) {
       const inicio = performance.now();
       try {
-        const data = await procesar();
+        const { data, secuencia } = await procesar(lienzo);
         if (!vigente()) return;
         estado.errores = 0;
-        pintar(data);
-        const ahora = performance.now();
-        ui.fps.textContent = (1000 / (ahora - ultimo)).toFixed(1);
-        ultimo = ahora;
+        data.nuevas_asistencias.forEach(agregarAsistencia);  // nunca se descartan
+        if (secuencia > estado.ultimaMostrada) {
+          estado.ultimaMostrada = secuencia;
+          pintar(data);
+        }
       } catch (error) {
         if (!vigente() || error.name === "AbortError") return;
         manejarError(error);
@@ -88,18 +103,39 @@ export function iniciarMonitor(config) {
     }
   }
 
-  // La imagen procesada solo se pide cuando hace falta (filtro o privacidad).
-  const necesitaImagen = () => ui.modo.value !== "normal" || ui.privacidad.checked;
+  // Solo los filtros necesitan la imagen procesada por OpenCV; la privacidad se
+  // aplica en el navegador sobre el video en vivo.
+  const necesitaImagen = () => ui.modo.value !== "normal";
 
-  async function procesar() {
-    const blob = await capturarFotograma(ui.video, ui.canvas, CALIDAD_ANALISIS, ANCHO_ANALISIS);
-    estado.abort = new AbortController();
-    return enviarImagen(config.url, blob, {
-      sesion: config.sesion,
-      modo: ui.modo.value,
-      privacidad: ui.privacidad.checked ? "1" : "0",
-      imagen: necesitaImagen() ? "1" : "0",
-    }, estado.abort.signal);
+  async function procesar(lienzo) {
+    const conImagen = necesitaImagen();
+    const envio = conImagen ? ENVIO.filtro : ENVIO.normal;
+    const secuencia = ++estado.secuencia;
+    const blob = await capturarFotograma(ui.video, lienzo, envio.calidad, envio.ancho);
+    const control = new AbortController();
+    estado.peticiones.add(control);
+    try {
+      const data = await enviarImagen(config.url, blob, {
+        sesion: config.sesion,
+        modo: ui.modo.value,
+        privacidad: ui.privacidad.checked ? "1" : "0",
+        imagen: conImagen ? "1" : "0",
+      }, control.signal);
+      return { data, secuencia };
+    } finally {
+      estado.peticiones.delete(control);
+    }
+  }
+
+  // Redibuja los últimos resultados en cada cuadro del video, así el pixelado
+  // de privacidad sigue al video en tiempo real.
+  function redibujar(generacion) {
+    if (!estado.activo || estado.generacion !== generacion) return;
+    const r = estado.resultado;
+    if (r && !r.imagen) {
+      dibujarOverlay(ui.overlay, ui.video, r.rostros, r.ancho, { privacidad: ui.privacidad.checked });
+    }
+    requestAnimationFrame(() => redibujar(generacion));
   }
 
   function manejarError(error) {
@@ -112,14 +148,19 @@ export function iniciarMonitor(config) {
   }
 
   function pintar(data) {
+    estado.resultado = data;
     if (data.imagen) {
       ui.salida.src = data.imagen;
       ui.salida.hidden = false;
       limpiarOverlay(ui.overlay);
     } else {
       ui.salida.hidden = true;
-      dibujarOverlay(ui.overlay, ui.video, data.rostros, data.ancho);
+      // También se dibuja aquí por si el navegador pausa requestAnimationFrame.
+      dibujarOverlay(ui.overlay, ui.video, data.rostros, data.ancho, { privacidad: ui.privacidad.checked });
     }
+    const ahora = performance.now();
+    ui.fps.textContent = (1000 / Math.max(ahora - estado.ultimoInstante, 1)).toFixed(1);
+    estado.ultimoInstante = ahora;
     ui.rostros.textContent = data.total_rostros;
     ui.desc.textContent = data.desconocidos;
     ui.ms.textContent = `${Math.round(data.ms)} ms`;
@@ -129,7 +170,6 @@ export function iniciarMonitor(config) {
       mostrarEstado(ui.estado, "Poca luz detectada: se aplica mejora de contraste (CLAHE).");
     }
     pintarDetectados(data.rostros);
-    data.nuevas_asistencias.forEach(agregarAsistencia);
   }
 
   function pintarDetectados(rostros) {
