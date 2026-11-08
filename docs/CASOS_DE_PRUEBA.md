@@ -29,7 +29,7 @@ Marque el resultado obtenido en la última columna.
 | CP-18 | Varios rostros | 2-3 estudiantes registrados a la vez | Todos reconocidos y registrados | ☐ OK ☐ Falla |
 | CP-19 | Poca luz | Apagar la luz del aula / bajar el brillo | Aviso "Poca luz: mejora CLAHE aplicada" y el reconocimiento continúa | ☐ OK ☐ Falla |
 | CP-20 | Filtros de procesamiento | Cambiar filtro a Grises, Bordes (Canny), Térmico, CLAHE | El video cambia en vivo y sigue mostrando detecciones | ☐ OK ☐ Falla |
-| CP-21 | Modo privacidad | Activar *Pixelar desconocidos* | Los rostros desconocidos aparecen pixelados | ☐ OK ☐ Falla |
+| CP-21 | Modo privacidad | Elegir *Pixelar desconocidos* y luego *Pixelar todos* | Primero solo se pixelan los desconocidos; luego todos los rostros | ☐ OK ☐ Falla |
 | CP-22 | Monitor sin sesión | Abrir el monitor sin sesión activa | Reconoce rostros pero no registra asistencia | ☐ OK ☐ Falla |
 | CP-23 | Cerrar sesión de clase | Detalle → *Cerrar sesión* | Estado "Cerrada"; ya no registra asistencias | ☐ OK ☐ Falla |
 | CP-24 | Estadísticas | Abrir el detalle de la sesión | Inscritos, presentes, ausentes y porcentaje correctos | ☐ OK ☐ Falla |

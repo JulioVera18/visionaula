@@ -118,7 +118,7 @@ export function iniciarMonitor(config) {
       const data = await enviarImagen(config.url, blob, {
         sesion: config.sesion,
         modo: ui.modo.value,
-        privacidad: ui.privacidad.checked ? "1" : "0",
+        privacidad: ui.privacidad.value,
         imagen: conImagen ? "1" : "0",
       }, control.signal);
       return { data, secuencia };
@@ -133,7 +133,7 @@ export function iniciarMonitor(config) {
     if (!estado.activo || estado.generacion !== generacion) return;
     const r = estado.resultado;
     if (r && !r.imagen) {
-      dibujarOverlay(ui.overlay, ui.video, r.rostros, r.ancho, { privacidad: ui.privacidad.checked });
+      dibujarOverlay(ui.overlay, ui.video, r.rostros, r.ancho, { privacidad: ui.privacidad.value });
     }
     requestAnimationFrame(() => redibujar(generacion));
   }
@@ -156,7 +156,7 @@ export function iniciarMonitor(config) {
     } else {
       ui.salida.hidden = true;
       // También se dibuja aquí por si el navegador pausa requestAnimationFrame.
-      dibujarOverlay(ui.overlay, ui.video, data.rostros, data.ancho, { privacidad: ui.privacidad.checked });
+      dibujarOverlay(ui.overlay, ui.video, data.rostros, data.ancho, { privacidad: ui.privacidad.value });
     }
     const ahora = performance.now();
     ui.fps.textContent = (1000 / Math.max(ahora - estado.ultimoInstante, 1)).toFixed(1);

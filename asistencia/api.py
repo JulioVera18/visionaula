@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST
 
 from vision.codec import InvalidImageError
 from vision.model_store import ModelUnavailableError
-from vision.pipeline import EnrollmentError
+from vision.pipeline import PRIVACY_MODES, PRIVACY_NONE, PRIVACY_UNKNOWN, EnrollmentError
 from vision.preprocessing import VIEW_FILTERS
 
 from . import services
@@ -68,6 +68,12 @@ def _sesion_desde(request) -> SesionClase | None:
     return SesionClase.objects.filter(pk=int(raw)).first()
 
 
+def _modo_privacidad(valor: str | None) -> str:
+    if valor == "1":  # compatibilidad con la casilla anterior
+        return PRIVACY_UNKNOWN
+    return valor if valor in PRIVACY_MODES else PRIVACY_NONE
+
+
 @require_POST
 @api_view
 def procesar_frame(request):
@@ -78,7 +84,7 @@ def procesar_frame(request):
         image_bytes=_leer_frame(request),
         sesion=_sesion_desde(request),
         view_mode=view_mode,
-        privacy=request.POST.get("privacidad") == "1",
+        privacy=_modo_privacidad(request.POST.get("privacidad")),
         with_image=request.POST.get("imagen", "1") != "0",
     )
     return json_ok(services.procesar_frame(frame_request))

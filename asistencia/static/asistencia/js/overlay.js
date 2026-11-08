@@ -20,7 +20,7 @@ const BLOQUES_PIXELADO = 10;
  * @param {HTMLVideoElement} video
  * @param {Array} rostros  rostros devueltos por /api/procesar/
  * @param {number} ancho  ancho de la imagen que analizó el servidor
- * @param {{privacidad?: boolean}} opciones  privacidad: pixelar rostros desconocidos
+ * @param {{privacidad?: string}} opciones  privacidad: "no", "desconocidos" o "todos"
  */
 export function dibujarOverlay(canvas, video, rostros, ancho, opciones = {}) {
   const ctx = prepararLienzo(canvas);
@@ -28,9 +28,10 @@ export function dibujarOverlay(canvas, video, rostros, ancho, opciones = {}) {
   const area = areaVisible(canvas, video);
   const k = area.ancho / ancho;
   const punto = (x, y) => [area.x + x * k, area.y + y * k];
-  if (opciones.privacidad) {
+  const privacidad = opciones.privacidad || "no";
+  if (privacidad !== "no") {
     const escalaVideo = video.videoWidth / ancho;
-    rostros.filter((r) => r.estudiante_id === null)
+    rostros.filter((r) => privacidad === "todos" || r.estudiante_id === null)
       .forEach((r) => pixelar(ctx, video, r.box, escalaVideo, punto, k));
   }
   rostros.forEach((rostro) => dibujarRostro(ctx, rostro, punto, k));
