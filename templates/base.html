@@ -1,10 +1,11 @@
-{% load static %}<!doctype html>
+{% load static recursos %}<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}VisionAula{% endblock %} · VisionAula</title>
-  <link rel="stylesheet" href="{% static 'asistencia/css/app.css' %}">
+  <link rel="stylesheet" href="{% estatico_versionado 'asistencia/css/app.css' %}">
+  {% mapa_modulos_js %}
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%234f46e5'/><circle cx='12' cy='12' r='4' fill='white'/></svg>">
 </head>
 <body>
